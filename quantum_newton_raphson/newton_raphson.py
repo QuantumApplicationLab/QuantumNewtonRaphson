@@ -1,11 +1,9 @@
-import numpy  as np 
+import numpy as np
 from typing import Callable
-
 from functools import partial
-
 from numpy.linalg import norm
-from .splu_solve import splu_solve
 
+from .splu_solve import splu_solve
 from .result import NewtonRaphsonResult
 
 
@@ -17,11 +15,11 @@ def newton_raphson(
     max_iter: int = 100,
     func_options: dict = {},
     linear_solver: Callable = splu_solve,
-    linear_solver_options = {}
+    linear_solver_options={"reorder": "max_edge"},
 ):
-    """Newton Raphson routine 
+    """Newton Raphson routine
 
-    Orignal routine taken from PyPSA 
+    Orignal routine taken from PyPSA
 
     Solve f(x) = 0 with initial guess for x and dfdx(x).
 
@@ -29,7 +27,7 @@ def newton_raphson(
     of f(x) is < x_tol or there were more than lim_iter iterations.
 
     Args:
-        func (Callable): function to minimize 
+        func (Callable): function to minimize
         initial_guess (np.ndarray): initial guess for the solution
         grad (Callable): gradients of the function to minimize
         tol (float, optional): convergence parameters. Defaults to 1e-10.
@@ -51,7 +49,7 @@ def newton_raphson(
     linear_solver_results = []
 
     # init the function values
-    current_solution = initial_guess 
+    current_solution = initial_guess
     func_values = func(current_solution, **func_options)
 
     # init the error values
@@ -59,13 +57,12 @@ def newton_raphson(
 
     # loop while not converged
     while error > tol and n_iter < max_iter:
-
         n_iter += 1
 
         # solve linear system
-        result = linear_solver(grad(current_solution, **func_options), 
-                               func_values, 
-                               **linear_solver_options)
+        result = linear_solver(
+            grad(current_solution, **func_options), func_values, **linear_solver_options
+        )
         linear_solver_results.append(result)
 
         # update solution
@@ -80,11 +77,13 @@ def newton_raphson(
     # check for convergence
     if error > tol:
         print(
-            'Warning, we didn\'t reach the required tolerance within %d iterations, error is at %f.',
+            "Warning, we didn't reach the required tolerance within %d iterations, error is at %f.",
             n_iter,
             error,
         )
     elif not np.isnan(error):
         converged = True
 
-    return NewtonRaphsonResult(current_solution, n_iter, error, converged, linear_solver_results)
+    return NewtonRaphsonResult(
+        current_solution, n_iter, error, converged, linear_solver_results
+    )

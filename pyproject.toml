@@ -8,9 +8,7 @@ requires = ["setuptools>=64.0.0", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-authors = [
-    { name = "Nicolas Renaud", email = "n.renaud@esciencecenter.nl" }
-]
+authors = [{ name = "Nicolas Renaud", email = "n.renaud@esciencecenter.nl" }]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
@@ -24,21 +22,22 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = []
-description = "Quantum version of Newton-Raphson algorithm"
-keywords = [
-    "optimization",
-    "quantum",
+dependencies = [
+    "numpy",
+    "scipy",
+    "qalcore@git+https://github.com/QuantumApplicationLab/qalcore",
 ]
-license = {file = "LICENSE"}
+description = "Quantum version of Newton-Raphson algorithm"
+keywords = ["optimization", "quantum"]
+license = { file = "LICENSE" }
 name = "quantum_newton_raphson"
-readme = {file = "README.md", content-type = "text/markdown"}
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.8"
 version = "0.1.0"
 
 [project.optional-dependencies]
 dev = [
-    "build",  # build is not only used in publishing (below), but also in the template's test suite
+    "build",            # build is not only used in publishing (below), but also in the template's test suite
     "bump-my-version",
     "coverage [toml]",
     "pytest",
@@ -50,11 +49,7 @@ dev = [
     "tox",
     "myst_parser",
 ]
-publishing = [
-    "build",
-    "twine",
-    "wheel",
-]
+publishing = ["build", "twine", "wheel"]
 
 [project.urls]
 Repository = "https://github.com/QuantumApplicationLab/quantumnewtonraphson"
@@ -72,7 +67,13 @@ command_line = "-m pytest"
 [tool.isort]
 lines_after_imports = 2
 force_single_line = 1
-no_lines_before = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+no_lines_before = [
+    "FUTURE",
+    "STDLIB",
+    "THIRDPARTY",
+    "FIRSTPARTY",
+    "LOCALFOLDER",
+]
 known_first_party = "quantum_newton_raphson"
 src_paths = ["quantum_newton_raphson", "tests"]
 line_length = 120
@@ -95,12 +96,12 @@ extras = dev
 [tool.ruff]
 # Enable Pyflakes `E` and `F` codes by default.
 select = [
-    "F",  # Pyflakes
-    "E",  # pycodestyle (error)
-    "W",    # pycodestyle (warning)
+    "F", # Pyflakes
+    "E", # pycodestyle (error)
+    "W", # pycodestyle (warning)
     # "C90",  # mccabe
-    "I",    # isort
-    "D",    # pydocstyle
+    "I", # isort
+    "D", # pydocstyle
     # "PL",   # Pylint
     # "PLC",  # Convention
     # "PLE",  # Error
@@ -109,8 +110,8 @@ select = [
 
 ]
 ignore = [
-    'D100',  # Missing module docstring
-    'D104',  # Missing public package docstring
+    'D100', # Missing module docstring
+    'D104', # Missing public package docstring
     # The following list excludes rules irrelevant to the Google style
     'D203',
     'D204',
@@ -165,7 +166,13 @@ line-length = 120
 [tool.ruff.isort]
 known-first-party = ["quantum_newton_raphson"]
 force-single-line = true
-no-lines-before = ["future","standard-library","third-party","first-party","local-folder"]
+no-lines-before = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
 
 [tool.bumpversion]
 current_version = "0.1.0"
