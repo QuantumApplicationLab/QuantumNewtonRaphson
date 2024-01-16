@@ -1,6 +1,5 @@
 import numpy as np
 from typing import Callable
-from functools import partial
 from numpy.linalg import norm
 
 from .splu_solve import splu_solve

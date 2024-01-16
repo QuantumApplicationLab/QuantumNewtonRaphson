@@ -1,10 +1,11 @@
-import numpy  as np 
+import numpy as np
 from typing import List, Dict
 
 from scipy.sparse import csr_matrix
 from qalcore.qiskit.vqls import VQLS
 
 from .result import VQLSResult
+
 
 def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
     """Solve the linear system using VQLS
@@ -14,7 +15,6 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
         blist (List): b vector
         quantum_solver_options (dict): options for the solver
     """
-
 
     def post_process_vqls_solution(A, y, x):
         """Retreive the  norm and direction of the solution vector
@@ -35,7 +35,7 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
 
         if np.dot(Ax * prefac, y) < 0:
             prefac *= -1
-        sol = prefac * x 
+        sol = prefac * x
         return sol
 
     # create a sparse matrix from the graph
@@ -47,15 +47,31 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
     b /= norm_b
 
     # extract required options for the vqls solver
-    estimator = quantum_solver_options.pop('estimator')
-    ansatz = quantum_solver_options.pop('ansatz')
-    optimizer = quantum_solver_options.pop('optimizer')
+    estimator = quantum_solver_options.pop("estimator")
+    ansatz = quantum_solver_options.pop("ansatz")
+    optimizer = quantum_solver_options.pop("optimizer")
 
     # extract optional options for the vqls solver
-    sampler = quantum_solver_options.pop('sampler') if 'sampler' in quantum_solver_options else None
-    initial_point = quantum_solver_options.pop('initial_point') if 'initial_point' in quantum_solver_options else None
-    gradient = quantum_solver_options.pop('gradient') if 'gradient' in quantum_solver_options else None
-    max_evals_grouped = quantum_solver_options.pop('max_evals_grouped') if 'max_evals_grouped' in quantum_solver_options else None
+    sampler = (
+        quantum_solver_options.pop("sampler")
+        if "sampler" in quantum_solver_options
+        else None
+    )
+    initial_point = (
+        quantum_solver_options.pop("initial_point")
+        if "initial_point" in quantum_solver_options
+        else None
+    )
+    gradient = (
+        quantum_solver_options.pop("gradient")
+        if "gradient" in quantum_solver_options
+        else None
+    )
+    max_evals_grouped = (
+        quantum_solver_options.pop("max_evals_grouped")
+        if "max_evals_grouped" in quantum_solver_options
+        else None
+    )
 
     # solver
     vqls = VQLS(
@@ -66,7 +82,7 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
         initial_point=initial_point,
         gradient=gradient,
         max_evals_grouped=max_evals_grouped,
-        options=quantum_solver_options
+        options=quantum_solver_options,
     )
 
     # solver
@@ -74,4 +90,3 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
 
     # extract the results
     return VQLSResult(post_process_vqls_solution(mat, b, res.vector))
-
