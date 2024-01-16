@@ -24,7 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
-    "scipy==1.11.3",
+    "scipy",
     "qalcore@git+https://github.com/QuantumApplicationLab/qalcore",
 ]
 description = "Quantum version of Newton-Raphson algorithm"
