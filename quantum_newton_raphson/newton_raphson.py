@@ -4,7 +4,7 @@ from typing import Callable
 from functools import partial
 
 from numpy.linalg import norm
-from scipy.sparse.linalg import spsolve
+from .splu_solve import splu_solve
 
 from .result import NewtonRaphsonResult
 
@@ -16,7 +16,7 @@ def newton_raphson(
     tol: float = 1e-10,
     max_iter: int = 100,
     func_options: dict = {},
-    linear_solver: Callable = spsolve,
+    linear_solver: Callable = splu_solve,
     linear_solver_options = {}
 ):
     """Newton Raphson routine 
@@ -64,7 +64,8 @@ def newton_raphson(
 
         # solve linear system
         result = linear_solver(grad(current_solution, **func_options), 
-                                             func_values, **linear_solver_options)
+                               func_values, 
+                               **linear_solver_options)
         linear_solver_results.append(result)
 
         # update solution

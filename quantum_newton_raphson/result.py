@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import numpy as np 
 from typing import List 
+from scipy.sparse.linalg  import SuperLU
 
 @dataclass
 class NewtonRaphsonResult:
@@ -11,8 +12,9 @@ class NewtonRaphsonResult:
     linear_solver_results: List
 
 @dataclass
-class LinearSolverResult:
+class SPLUResult:
     solution: np.ndarray
+    splu: SuperLU
 
 @dataclass 
 class VQLSResult:
