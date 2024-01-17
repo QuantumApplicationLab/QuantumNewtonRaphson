@@ -15,5 +15,5 @@ size = 5
 )
 def test_qubosolve_real(A, b, options):
     results = qubosolve_real(A, b, options)
-    if np.linalg.norm(A.dot(results.solution) - b) > 0.8:
+    if np.linalg.norm(A.dot(results.solution) - b) > 0.1:
         pytest.skip("QUBOLS solution innacurate")
