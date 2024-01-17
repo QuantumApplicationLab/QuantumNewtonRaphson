@@ -1,69 +1,34 @@
 import numpy as np
-from typing import List, Dict
-from scipy.sparse import csr_matrix
+from typing import Dict
+from scipy.sparse import sparray
 from qalcore.dwave.qubols.qubols import QUBOLS
-
+from qalcore.dwave.qubols.encodings import EfficientEncoding
 from .result import QUBOResult
 
 
-def qubosolve_complex(Agraph, blist, quantum_solver_options):
-    """Solve the linear system using QUBO
-
-    to deal with the complex matrix we solve
-
-    Ar -Ac    xr      br
-    Ac  Ar    xc   =  bc
+def qubosolve_real(A: sparray, b: np.ndarray, options: Dict = {}) -> QUBOResult:
+    """Solve a real system of euqations using QUBO linear solver
 
     Args:
-        Agraph (tuple): graph representing the A matrix
-        blist (List): b vector
-        quantum_solver_options (dict): optins for the solver
+        A (sparray): input matrix
+        blist (np.ndarray): right hand side
+        options (Dict, optional): Options for the quantum solver. Defaults to {}.
+
+    Returns:
+        QUBOResult: solution of the system
     """
 
-    # create a dense matrix from the graph
-    mat = csr_matrix(Agraph)  # .todense()
-    size = mat.shape[0]
-
-    # create the real/imag
-    A = np.block([[mat.real, -mat.imag], [mat.imag, mat.real]])
+    # preprocess options
+    if "encoding" not in options:
+        options["encoding"] = EfficientEncoding
 
     # preprocess the b vector
-    b = np.array(blist)
-    b = np.block([b.real, b.imag])
     norm_b = np.linalg.norm(b)
-    b /= norm_b
+    bnorm = np.copy(b)
+    bnorm /= norm_b
 
     # solve
-    update = QUBOLS(quantum_solver_options).solve(A, b)
-
-    # postporcess solution
-    update *= norm_b
-
-    return QUBOResult(update[:size] + 1.0j * update[size:])
-
-
-def qubosolve_real(Agraph, blist, quantum_solver_options):
-    """Solve the linear system using QUBO
-
-    to deal with the complex matrix we solve
-
-
-    Args:
-        Agraph (tuple): graph representing the A matrix
-        blist (List): b vector
-        quantum_solver_options (dict): optins for the solver
-    """
-
-    # create a dense matrix from the graph
-    mat = csr_matrix(Agraph)  # .todense()
-
-    # preprocess the b vector
-    b = np.array(blist)
-    norm_b = np.linalg.norm(b)
-    b /= norm_b
-
-    # solve
-    update = QUBOLS(quantum_solver_options).solve(mat, b)
+    update = QUBOLS(options).solve(A, bnorm)
 
     # postporcess solution
     update *= norm_b

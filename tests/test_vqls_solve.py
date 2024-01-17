@@ -2,10 +2,10 @@
 import pytest
 from scipy.sparse import random as sprand
 import numpy as np
-from quantum_newton_raphson.splu_solve import splu_solve
+from quantum_newton_raphson.vqls_solve import vqlssolve
 
 
-size = 5
+size = 4
 
 
 @pytest.mark.parametrize("A", [sprand(size, size, density=0.85, format="csc")])
