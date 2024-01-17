@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Dict
 from scipy.sparse import sparray, triu
+from scipy.sparse.linalg import splu
 from .result import SPLUResult
 
 
@@ -28,7 +29,8 @@ def get_max_edge_ordering(A: sparray):
     Args:
         A (sparray): input matrix
     """
-    return np.argsort(triu(A, k=1).sum(1))
+    idx = np.argsort(triu(A, k=1).sum(1).flatten())
+    return np.array(idx).ravel()
 
 
 def get_quantum_ordering(A: sparray, options: Dict = {}):
@@ -43,27 +45,27 @@ def get_quantum_ordering(A: sparray, options: Dict = {}):
     )
 
 
-def splu_solve(A: sparray, b: sparray, options: Dict = {}):
+def splu_solve(A: sparray, b: np.ndarray, options: Dict = {}):
     """Solve the linear system by reordering the system of eq.
 
     Args:
         A (sparray): input matrix
-        b (sparray): input rhs
+        b (np.ndarray): input rhs
         options (dict, optional): _description_. Defaults to {}.
     """
 
     # get order
-    reorder_method = options.pop("reorder") if "reoder" in options else "max_edge"
-    order = get_ordering(A, reorder_method)
+    reorder_method = options.pop("reorder") if "reorder" in options else "max_edge"
+    order = get_ordering(A, reorder_method, options)
 
     # reorder matrix and rhs
     A = A[np.ix_(order, order)]
     b = b[order]
 
     # solve
-    splu = splu(A, permc_spec="NATURAL")
-    x = splu.solve(b)
+    solver = splu(A, permc_spec="NATURAL")
+    x = solver.solve(b)
 
     # reorder solution
     x = x[np.argsort(order)]
-    return SPLUResult(x, splu)
+    return SPLUResult(x, solver)
