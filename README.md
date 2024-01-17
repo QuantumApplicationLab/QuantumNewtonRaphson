@@ -1,4 +1,4 @@
-## Badges
+<!-- ## Badges
 
 (Customize these badges with your own links, and check https://shields.io/ or https://badgen.net/ to see which other badges are available.)
 
@@ -18,7 +18,7 @@
 | Build                              | [![build](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/build.yml/badge.svg)](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/build.yml) |
 | Citation data consistency          | [![cffconvert](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/cffconvert.yml/badge.svg)](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/cffconvert.yml) |
 | SonarCloud                         | [![sonarcloud](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/sonarcloud.yml) |
-| MarkDown link checker              | [![markdown-link-check](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/markdown-link-check.yml/badge.svg)](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/markdown-link-check.yml) |
+| MarkDown link checker              | [![markdown-link-check](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/markdown-link-check.yml/badge.svg)](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/markdown-link-check.yml) | -->
 
 ## How to use quantum_newton_raphson
 
