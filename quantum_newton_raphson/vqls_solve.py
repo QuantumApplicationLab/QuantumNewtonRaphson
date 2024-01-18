@@ -1,19 +1,21 @@
 import numpy as np
-from typing import List, Dict
+from typing import Dict
 
-from scipy.sparse import csr_matrix
+from scipy.sparse import sparray
 from qalcore.qiskit.vqls import VQLS
 
 from .result import VQLSResult
 
 
-def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
+def vqlssolve(
+    A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}
+) -> VQLSResult:
     """Solve the linear system using VQLS
 
     Args:
-        Agraph (tuple): graph representing the A matrix
-        blist (List): b vector
-        quantum_solver_options (dict): options for the solver
+        A (sparray): matrix of the linear syste
+        b (np.ndarray): righ habd side vector
+        quantum_solver_options (Dict): options for the solver
     """
 
     def post_process_vqls_solution(A, y, x):
@@ -38,13 +40,13 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
         sol = prefac * x
         return sol
 
-    # create a sparse matrix from the graph
-    mat = csr_matrix(Agraph)
+    # preprocess the initial matrix
+    A = A.todense()
 
     # preprocess the b vector
-    b = np.array(blist)
     norm_b = np.linalg.norm(b)
-    b /= norm_b
+    bnorm = np.copy(b)
+    bnorm /= norm_b
 
     # extract required options for the vqls solver
     estimator = quantum_solver_options.pop("estimator")
@@ -70,7 +72,7 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
     max_evals_grouped = (
         quantum_solver_options.pop("max_evals_grouped")
         if "max_evals_grouped" in quantum_solver_options
-        else None
+        else 1
     )
 
     # solver
@@ -86,7 +88,7 @@ def vqlssolve(Agraph: List, blist: List, quantum_solver_options: Dict = {}):
     )
 
     # solver
-    res = vqls.solve(mat, b)
+    res = vqls.solve(A, b)
 
     # extract the results
-    return VQLSResult(post_process_vqls_solution(mat, b, res.vector))
+    return VQLSResult(post_process_vqls_solution(A, b, res.vector))
