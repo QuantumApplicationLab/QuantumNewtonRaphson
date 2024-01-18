@@ -4,12 +4,13 @@ from numpy.linalg import norm
 
 from .splu_solve import splu_solve
 from .result import NewtonRaphsonResult
+from .utils import finite_difference_grads, bind_func_to_grad
 
 
 def newton_raphson(
     func: Callable,
     initial_guess: np.ndarray,
-    grad: Callable,
+    grad: Callable = finite_difference_grads,
     tol: float = 1e-10,
     max_iter: int = 100,
     func_options: dict = {},
@@ -35,9 +36,6 @@ def newton_raphson(
         linear_solver (callable, optional): linear solver used to solve the system
         linear_solver_options (dict, optional): options for the linear system
 
-    Raises:
-        ValueError: _description_
-
     Returns:
         OptimizationResult: Result of the optimization
     """
@@ -46,6 +44,9 @@ def newton_raphson(
     converged = False
     n_iter = 0
     linear_solver_results = []
+
+    # take care of binding if necessary
+    grad = bind_func_to_grad(grad, func)
 
     # init the function values
     current_solution = initial_guess
@@ -60,7 +61,9 @@ def newton_raphson(
 
         # solve linear system
         result = linear_solver(
-            grad(current_solution, **func_options), func_values, **linear_solver_options
+            grad(current_solution, **func_options),
+            func_values,
+            options=linear_solver_options,
         )
         linear_solver_results.append(result)
 
