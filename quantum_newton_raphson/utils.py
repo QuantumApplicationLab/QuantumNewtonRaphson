@@ -1,6 +1,12 @@
 import numpy as np
-from typing import Callable
+from scipy.sparse import sparray
+from typing import Callable, Tuple, Union
 from functools import partial
+from scipy.sparse import issparse, SparseEfficiencyWarning, csc_matrix
+from scipy.sparse._sputils import is_pydata_spmatrix
+from warnings import warn
+
+ValidInputFormat = Union[sparray, Tuple, np.ndarray]
 
 
 def bind_func_to_grad(grad: Callable, func: Callable) -> Callable:
@@ -44,3 +50,30 @@ def finite_difference_grads(
 
         out[:, ix] = grad_ix / eps / 2
     return out
+
+
+def preprocess_data(
+    A: ValidInputFormat, b: ValidInputFormat
+) -> Tuple[ValidInputFormat, ValidInputFormat]:
+    """Convert the input data in a type compatible with scipy sparse arrays
+
+    Args:
+        A (ValidInputFormat): input matrix
+        b (ValidInputFormat): input vector
+    Returns:
+        Tuple[ValidInputFormat, ValidInputFormat]: converted input data
+    """
+
+    if is_pydata_spmatrix(A):
+        A = A.to_scipy_sparse().tocsc()
+
+    if not (issparse(A) and A.format in ("csc", "csr")):
+        A = csc_matrix(A)
+        warn("spsolve requires A be CSC or CSR matrix format", SparseEfficiencyWarning)
+
+    # b is a vector only if b have shape (n,) or (n, 1)
+    b_is_sparse = issparse(b) or is_pydata_spmatrix(b)
+    if not b_is_sparse:
+        b = np.asarray(b)
+
+    return A, b

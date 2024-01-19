@@ -4,6 +4,7 @@ from scipy.sparse import sparray
 from qalcore.dwave.qubols.qubols import QUBOLS
 from qalcore.dwave.qubols.encodings import EfficientEncoding
 from .result import QUBOResult
+from .utils import preprocess_data
 
 
 def qubosolve_real(A: sparray, b: np.ndarray, options: Dict = {}) -> QUBOResult:
@@ -17,6 +18,9 @@ def qubosolve_real(A: sparray, b: np.ndarray, options: Dict = {}) -> QUBOResult:
     Returns:
         QUBOResult: solution of the system
     """
+
+    # convert the input data inot a spsparse compatible format
+    A, b = preprocess_data(A, b)
 
     # preprocess options
     if "encoding" not in options:

@@ -1,8 +1,11 @@
 import numpy as np
-from typing import Dict
+from typing import Dict, Union, Tuple
 from scipy.sparse import sparray, triu
 from scipy.sparse.linalg import splu
 from .result import SPLUResult
+from .utils import preprocess_data
+
+ValidInputFormat = Union[sparray, Tuple, np.ndarray]
 
 
 def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
@@ -74,17 +77,22 @@ def get_quantum_ordering(A: sparray, options: Dict = {}) -> np.ndarray:
     )
 
 
-def splu_solve(A: sparray, b: np.ndarray, options: Dict = {}) -> SPLUResult:
+def splu_solve(
+    A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}
+) -> SPLUResult:
     """Solve the linear system by reordering the system of eq.
 
     Args:
-        A (sparray): input matrix
-        b (np.ndarray): input rhs
+        A (ValidInputFormat): input matrix
+        b (ValidInputFormat): input rhs
         options (dict, optional): options for the reordering. Defaults to {}.
 
     Returns:
         SPLUResult: object containing all the results of the solver
     """
+
+    # convert the input data inot a spsparse compatible format
+    A, b = preprocess_data(A, b)
 
     # get order
     reorder_method = options.pop("reorder") if "reorder" in options else "max_edge"

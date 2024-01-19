@@ -3,7 +3,7 @@ from typing import Dict
 
 from scipy.sparse import sparray
 from qalcore.qiskit.vqls import VQLS
-
+from .utils import preprocess_data
 from .result import VQLSResult
 
 
@@ -39,6 +39,9 @@ def vqlssolve(
             prefac *= -1
         sol = prefac * x
         return sol
+
+    # convert the input data inot a spsparse compatible format
+    A, b = preprocess_data(A, b)
 
     # preprocess the initial matrix
     A = A.todense()
