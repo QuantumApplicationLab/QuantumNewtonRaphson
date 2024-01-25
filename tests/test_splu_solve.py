@@ -10,9 +10,7 @@ size = 5
 
 @pytest.mark.parametrize("A", [sprand(size, size, density=0.85, format="csc")])
 @pytest.mark.parametrize("b", [np.random.rand(size)])
-@pytest.mark.parametrize(
-    "options", [{}, {"reorder": "max_edge"}, {"reorder": "no_reordering"}]
-)
+@pytest.mark.parametrize("options", [{}, {"reorder": "max_edge"}, {"reorder": "no_reordering"}])
 def test_splu_solve_default(A, b, options):
     results = splu_solve(A, b, options)
     assert np.allclose(A.dot(results.solution), b)

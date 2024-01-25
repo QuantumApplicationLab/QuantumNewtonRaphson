@@ -28,9 +28,7 @@ def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
 
     if reorder_method not in reordering_functions:
         raise ValueError(
-            "Ordering method not recognized, valid options are {}".format(
-                list(reordering_functions.keys())
-            )
+            "Ordering method not recognized, valid options are {}".format(list(reordering_functions.keys()))
         )
 
     return reordering_functions[reorder_method](A, **options)
@@ -72,14 +70,10 @@ def get_quantum_ordering(A: sparray, options: Dict = {}) -> np.ndarray:
     Returns:
         np.ndarray: ordering indices
     """
-    raise NotImplementedError(
-        "Quantum routine for matrix reordeing not implemented yet"
-    )
+    raise NotImplementedError("Quantum routine for matrix reordeing not implemented yet")
 
 
-def splu_solve(
-    A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}
-) -> SPLUResult:
+def splu_solve(A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}) -> SPLUResult:
     """Solve the linear system by reordering the system of eq.
 
     Args:

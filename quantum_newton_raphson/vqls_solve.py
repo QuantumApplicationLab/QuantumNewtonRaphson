@@ -7,9 +7,7 @@ from .utils import preprocess_data
 from .result import VQLSResult
 
 
-def vqlssolve(
-    A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}
-) -> VQLSResult:
+def vqlssolve(A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}) -> VQLSResult:
     """Solve the linear system using VQLS
 
     Args:
@@ -57,25 +55,11 @@ def vqlssolve(
     optimizer = quantum_solver_options.pop("optimizer")
 
     # extract optional options for the vqls solver
-    sampler = (
-        quantum_solver_options.pop("sampler")
-        if "sampler" in quantum_solver_options
-        else None
-    )
-    initial_point = (
-        quantum_solver_options.pop("initial_point")
-        if "initial_point" in quantum_solver_options
-        else None
-    )
-    gradient = (
-        quantum_solver_options.pop("gradient")
-        if "gradient" in quantum_solver_options
-        else None
-    )
+    sampler = quantum_solver_options.pop("sampler") if "sampler" in quantum_solver_options else None
+    initial_point = quantum_solver_options.pop("initial_point") if "initial_point" in quantum_solver_options else None
+    gradient = quantum_solver_options.pop("gradient") if "gradient" in quantum_solver_options else None
     max_evals_grouped = (
-        quantum_solver_options.pop("max_evals_grouped")
-        if "max_evals_grouped" in quantum_solver_options
-        else 1
+        quantum_solver_options.pop("max_evals_grouped") if "max_evals_grouped" in quantum_solver_options else 1
     )
 
     # solver

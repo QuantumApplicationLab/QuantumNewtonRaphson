@@ -25,9 +25,7 @@ def bind_func_to_grad(grad: Callable, func: Callable) -> Callable:
     return grad
 
 
-def finite_difference_grads(
-    input: np.ndarray, func: Callable, eps: float = 1e-6
-) -> np.ndarray:
+def finite_difference_grads(input: np.ndarray, func: Callable, eps: float = 1e-6) -> np.ndarray:
     """Compute the gradient of function at a given poijt using central finite difference
 
     Args:
@@ -52,9 +50,7 @@ def finite_difference_grads(
     return out
 
 
-def preprocess_data(
-    A: ValidInputFormat, b: ValidInputFormat
-) -> Tuple[ValidInputFormat, ValidInputFormat]:
+def preprocess_data(A: ValidInputFormat, b: ValidInputFormat) -> Tuple[ValidInputFormat, ValidInputFormat]:
     """Convert the input data in a type compatible with scipy sparse arrays
 
     Args:

@@ -86,6 +86,4 @@ def newton_raphson(
     elif not np.isnan(error):
         converged = True
 
-    return NewtonRaphsonResult(
-        current_solution, n_iter, error, converged, linear_solver_results
-    )
+    return NewtonRaphsonResult(current_solution, n_iter, error, converged, linear_solver_results)
