@@ -1,10 +1,10 @@
-import numpy as np
 from typing import Callable
+import numpy as np
 from numpy.linalg import norm
-
-from .splu_solve import splu_solve
 from .result import NewtonRaphsonResult
-from .utils import finite_difference_grads, bind_func_to_grad
+from .splu_solve import splu_solve
+from .utils import bind_func_to_grad
+from .utils import finite_difference_grads
 
 
 def newton_raphson(
@@ -17,12 +17,10 @@ def newton_raphson(
     linear_solver: Callable = splu_solve,
     linear_solver_options={"reorder": "max_edge"},
 ):
-    """Newton Raphson routine
+    """Newton Raphson routine.
 
     Orignal routine taken from PyPSA
-
     Solve f(x) = 0 with initial guess for x and dfdx(x).
-
     dfdx(x) should return a sparse Jacobian.  Terminate if error on norm
     of f(x) is < x_tol or there were more than lim_iter iterations.
 
@@ -39,7 +37,6 @@ def newton_raphson(
     Returns:
         OptimizationResult: Result of the optimization
     """
-
     # init trackers
     converged = False
     n_iter = 0
@@ -86,4 +83,6 @@ def newton_raphson(
     elif not np.isnan(error):
         converged = True
 
-    return NewtonRaphsonResult(current_solution, n_iter, error, converged, linear_solver_results)
+    return NewtonRaphsonResult(
+        current_solution, n_iter, error, converged, linear_solver_results
+    )

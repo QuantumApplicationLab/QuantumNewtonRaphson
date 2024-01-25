@@ -1,11 +1,13 @@
 from dataclasses import dataclass
-import numpy as np
 from typing import List
+import numpy as np
 from scipy.sparse.linalg import SuperLU
 
 
 @dataclass
 class NewtonRaphsonResult:
+    """Result of the NewtonRaphson routine."""
+
     solution: np.ndarray
     n_iter: int
     diff: float
@@ -15,12 +17,16 @@ class NewtonRaphsonResult:
 
 @dataclass
 class SPLUResult:
+    """Results of the Sparse LU solver."""
+
     solution: np.ndarray
     splu: SuperLU
 
 
 @dataclass
 class VQLSResult:
+    """Result of the VQLS."""
+
     solution: np.ndarray
     # n_iter: int
     # error: float
@@ -29,6 +35,8 @@ class VQLSResult:
 
 @dataclass
 class QUBOResult:
+    """Result of the QUBO linear solver."""
+
     solution: np.ndarray
     # n_iter: int
     # error: float

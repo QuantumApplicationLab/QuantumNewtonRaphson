@@ -1,16 +1,20 @@
-import numpy as np
-from scipy.sparse import sparray
-from typing import Callable, Tuple, Union
 from functools import partial
-from scipy.sparse import issparse, SparseEfficiencyWarning, csc_matrix
-from scipy.sparse._sputils import is_pydata_spmatrix
+from typing import Callable
+from typing import Tuple
+from typing import Union
 from warnings import warn
+import numpy as np
+from scipy.sparse import SparseEfficiencyWarning
+from scipy.sparse import csc_matrix
+from scipy.sparse import issparse
+from scipy.sparse import sparray
+from scipy.sparse._sputils import is_pydata_spmatrix
 
 ValidInputFormat = Union[sparray, Tuple, np.ndarray]
 
 
 def bind_func_to_grad(grad: Callable, func: Callable) -> Callable:
-    """Bind the function argument to the gradient calculator
+    """Bind the function argument to the gradient calculator.
 
     Args:
         grad (Callable): function to compue the gradient
@@ -19,14 +23,15 @@ def bind_func_to_grad(grad: Callable, func: Callable) -> Callable:
     Returns:
         Callable: gradient function with the function binded to it
     """
-
     if grad.__name__ == "finite_difference_grads":
         grad = partial(grad, func=func)
     return grad
 
 
-def finite_difference_grads(input: np.ndarray, func: Callable, eps: float = 1e-6) -> np.ndarray:
-    """Compute the gradient of function at a given poijt using central finite difference
+def finite_difference_grads(
+    input: np.ndarray, func: Callable, eps: float = 1e-6
+) -> np.ndarray:
+    """Compute the gradient of function at a given poijt using central finite difference.
 
     Args:
         input (np.ndarray): point at which to evaluate the gradient
@@ -50,8 +55,10 @@ def finite_difference_grads(input: np.ndarray, func: Callable, eps: float = 1e-6
     return out
 
 
-def preprocess_data(A: ValidInputFormat, b: ValidInputFormat) -> Tuple[ValidInputFormat, ValidInputFormat]:
-    """Convert the input data in a type compatible with scipy sparse arrays
+def preprocess_data(
+    A: ValidInputFormat, b: ValidInputFormat
+) -> Tuple[ValidInputFormat, ValidInputFormat]:
+    """Convert the input data in a type compatible with scipy sparse arrays.
 
     Args:
         A (ValidInputFormat): input matrix
@@ -59,7 +66,6 @@ def preprocess_data(A: ValidInputFormat, b: ValidInputFormat) -> Tuple[ValidInpu
     Returns:
         Tuple[ValidInputFormat, ValidInputFormat]: converted input data
     """
-
     if is_pydata_spmatrix(A):
         A = A.to_scipy_sparse().tocsc()
 

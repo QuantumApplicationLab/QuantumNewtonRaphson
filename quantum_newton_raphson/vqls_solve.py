@@ -1,14 +1,15 @@
-import numpy as np
 from typing import Dict
-
-from scipy.sparse import sparray
+import numpy as np
 from qalcore.qiskit.vqls import VQLS
-from .utils import preprocess_data
+from scipy.sparse import sparray
 from .result import VQLSResult
+from .utils import preprocess_data
 
 
-def vqlssolve(A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}) -> VQLSResult:
-    """Solve the linear system using VQLS
+def vqlssolve(
+    A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}
+) -> VQLSResult:
+    """Solve the linear system using VQLS.
 
     Args:
         A (sparray): matrix of the linear syste
@@ -17,17 +18,17 @@ def vqlssolve(A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}) -> V
     """
 
     def post_process_vqls_solution(A, y, x):
-        """Retreive the  norm and direction of the solution vector
+        """Retreive the  norm and direction of the solution vector.
+
            VQLS provides a normalized form of the solution vector
            that can also have a -1 prefactor. This routine retrieves
-           the un-normalized solution vector with the correct prefactor
+           the un-normalized solution vector with the correct prefactor.
 
         Args:
             A (np.ndarray): matrix of the linear system
             y (np.ndarray): rhs of the linear system
             x (np.ndarray): proposed solution
         """
-
         Ax = A @ x
         normy = np.linalg.norm(y)
         normAx = np.linalg.norm(Ax)
@@ -55,11 +56,25 @@ def vqlssolve(A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}) -> V
     optimizer = quantum_solver_options.pop("optimizer")
 
     # extract optional options for the vqls solver
-    sampler = quantum_solver_options.pop("sampler") if "sampler" in quantum_solver_options else None
-    initial_point = quantum_solver_options.pop("initial_point") if "initial_point" in quantum_solver_options else None
-    gradient = quantum_solver_options.pop("gradient") if "gradient" in quantum_solver_options else None
+    sampler = (
+        quantum_solver_options.pop("sampler")
+        if "sampler" in quantum_solver_options
+        else None
+    )
+    initial_point = (
+        quantum_solver_options.pop("initial_point")
+        if "initial_point" in quantum_solver_options
+        else None
+    )
+    gradient = (
+        quantum_solver_options.pop("gradient")
+        if "gradient" in quantum_solver_options
+        else None
+    )
     max_evals_grouped = (
-        quantum_solver_options.pop("max_evals_grouped") if "max_evals_grouped" in quantum_solver_options else 1
+        quantum_solver_options.pop("max_evals_grouped")
+        if "max_evals_grouped" in quantum_solver_options
+        else 1
     )
 
     # solver

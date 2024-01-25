@@ -1,6 +1,9 @@
+from typing import Dict
+from typing import Tuple
+from typing import Union
 import numpy as np
-from typing import Dict, Union, Tuple
-from scipy.sparse import sparray, triu
+from scipy.sparse import sparray
+from scipy.sparse import triu
 from scipy.sparse.linalg import splu
 from .result import SPLUResult
 from .utils import preprocess_data
@@ -9,7 +12,7 @@ ValidInputFormat = Union[sparray, Tuple, np.ndarray]
 
 
 def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
-    """get the reordering
+    """Get the reordering.
 
     Args:
         A (sparray): input matrix
@@ -19,7 +22,6 @@ def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
     Returns:
         np.ndarray: ordering indices
     """
-
     reordering_functions = {
         "max_edge": get_max_edge_ordering,
         "quantum": get_quantum_ordering,
@@ -28,14 +30,16 @@ def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
 
     if reorder_method not in reordering_functions:
         raise ValueError(
-            "Ordering method not recognized, valid options are {}".format(list(reordering_functions.keys()))
+            "Ordering method not recognized, valid options are {}".format(
+                list(reordering_functions.keys())
+            )
         )
 
     return reordering_functions[reorder_method](A, **options)
 
 
 def get_orginal_ordering(A: sparray) -> np.ndarray:
-    """Return the original ordering
+    """Return the original ordering.
 
     Args:
         A (sparray): input matrix
@@ -48,7 +52,7 @@ def get_orginal_ordering(A: sparray) -> np.ndarray:
 
 
 def get_max_edge_ordering(A: sparray) -> np.ndarray:
-    """Get ordering of the matrix using the maximum number of edges
+    """Get ordering of the matrix using the maximum number of edges.
 
     Args:
         A (sparray): input matrix
@@ -61,7 +65,7 @@ def get_max_edge_ordering(A: sparray) -> np.ndarray:
 
 
 def get_quantum_ordering(A: sparray, options: Dict = {}) -> np.ndarray:
-    """Get the ordering of the matrix element following the quantum approach
+    """Get the ordering of the matrix element following the quantum approach.
 
     Args:
         A (sparray): inout matrix
@@ -70,10 +74,14 @@ def get_quantum_ordering(A: sparray, options: Dict = {}) -> np.ndarray:
     Returns:
         np.ndarray: ordering indices
     """
-    raise NotImplementedError("Quantum routine for matrix reordeing not implemented yet")
+    raise NotImplementedError(
+        "Quantum routine for matrix reordeing not implemented yet"
+    )
 
 
-def splu_solve(A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}) -> SPLUResult:
+def splu_solve(
+    A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}
+) -> SPLUResult:
     """Solve the linear system by reordering the system of eq.
 
     Args:
@@ -84,7 +92,6 @@ def splu_solve(A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}) -> 
     Returns:
         SPLUResult: object containing all the results of the solver
     """
-
     # convert the input data inot a spsparse compatible format
     A, b = preprocess_data(A, b)
 
