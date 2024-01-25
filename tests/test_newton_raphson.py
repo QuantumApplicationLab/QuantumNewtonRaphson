@@ -1,11 +1,10 @@
 """Tests for the quantum_newton_raphson.my_module module."""
-import pytest
 import numpy as np
 from quantum_newton_raphson.newton_raphson import newton_raphson
 
 
 def func(input: np.ndarray) -> np.ndarray:
-    """Test function of a 3x3 system
+    """Test function of a 3x3 system.
 
     Args:
         input (np.ndarray): input point
@@ -25,7 +24,7 @@ def func(input: np.ndarray) -> np.ndarray:
 
 
 def grad(input: np.ndarray) -> np.ndarray:
-    """Analytic gradients of the function
+    """Analytic gradients of the function.
 
     Args:
         input (np.ndarray): input point
@@ -53,14 +52,14 @@ def grad(input: np.ndarray) -> np.ndarray:
 
 
 def test_newton_raphson_analytic_gradients():
-    """Compute NR solution using analytic gradients"""
+    """Compute NR solution using analytic gradients."""
     initial_point = np.random.rand(3)
     res = newton_raphson(func, initial_point, grad=grad)
     assert np.allclose(func(res.solution), 0)
 
 
 def test_newton_raphson_fd_gradients():
-    """Compute NR solution using fd gradients"""
+    """Compute NR solution using fd gradients."""
     initial_point = np.random.rand(3)
     res = newton_raphson(func, initial_point)
     assert np.allclose(func(res.solution), 0)
