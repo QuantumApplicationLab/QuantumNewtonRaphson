@@ -2,7 +2,7 @@ from typing import Dict
 from typing import Tuple
 from typing import Union
 import numpy as np
-from qreorder.classical_reordering import find_reordering as find_reordering_classical
+from qreorder.classical_ordering import find_ordering as find_reordering_classical
 from scipy.sparse import sparray
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
@@ -25,7 +25,7 @@ def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
     """
     reordering_functions = {
         "max_edge": get_max_edge_ordering,
-        "classical": get_classical_classical_minimal_fill_ordering,
+        "classical": get_classical_minimal_fill_ordering,
         "quantum": get_quantum_minimal_fill_ordering,
         "no_reordering": get_orginal_ordering,
     }
@@ -53,21 +53,6 @@ def get_orginal_ordering(A: sparray) -> np.ndarray:
     return np.array(range(size))
 
 
-def get_classical_classical_minimal_fill_ordering(
-    A: sparray, options: Dict = {}
-) -> np.ndarray:
-    """Get the classical minimal fill ordering classicaly.
-
-    Args:
-        A (sparray): Input of the matrix
-        options(Dict): options for the ordering method
-
-    Returns:
-        np.ndarray: ordering indices
-    """
-    return find_reordering_classical(A, options)
-
-
 def get_max_edge_ordering(A: sparray) -> np.ndarray:
     """Get ordering of the matrix using the maximum number of edges.
 
@@ -81,12 +66,26 @@ def get_max_edge_ordering(A: sparray) -> np.ndarray:
     return np.array(idx).ravel()
 
 
-def get_quantum_minimal_fill_ordering(A: sparray, options: Dict = {}) -> np.ndarray:
+def get_classical_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
+    """Get the classical minimal fill ordering classicaly.
+
+    Args:
+        A (sparray): Input of the matrix
+        **kwargs(Dict): options for the ordering method
+
+    Returns:
+        np.ndarray: ordering indices
+    """
+    idx, _ = find_reordering_classical(A, **kwargs)
+    return idx
+
+
+def get_quantum_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
     """Get the ordering of the matrix element following the quantum approach.
 
     Args:
         A (sparray): inout matrix
-        options (Dict, optional): options of the quantum routine Defaults to {}.
+        **kwargs (Dict, optional): options of the quantum routine Defaults to {}.
 
     Returns:
         np.ndarray: ordering indices
