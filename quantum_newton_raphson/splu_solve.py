@@ -3,6 +3,7 @@ from typing import Tuple
 from typing import Union
 import numpy as np
 from qreorder.classical_ordering import find_ordering as find_reordering_classical
+from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
 from scipy.sparse import sparray
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
@@ -12,7 +13,7 @@ from .utils import preprocess_data
 ValidInputFormat = Union[sparray, Tuple, np.ndarray]
 
 
-def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
+def get_ordering(A: sparray, reorder_method, **options) -> np.ndarray:
     """Get the reordering.
 
     Args:
@@ -24,10 +25,10 @@ def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
         np.ndarray: ordering indices
     """
     reordering_functions = {
+        "no_reordering": get_orginal_ordering,
         "max_edge": get_max_edge_ordering,
         "classical": get_classical_minimal_fill_ordering,
         "quantum": get_quantum_minimal_fill_ordering,
-        "no_reordering": get_orginal_ordering,
     }
 
     if reorder_method not in reordering_functions:
@@ -90,14 +91,11 @@ def get_quantum_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
     Returns:
         np.ndarray: ordering indices
     """
-    raise NotImplementedError(
-        "Quantum routine for matrix reordeing not implemented yet"
-    )
+    idx, _ = find_reordering_quantum(A, **kwargs)
+    return idx
 
 
-def splu_solve(
-    A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}
-) -> SPLUResult:
+def splu_solve(A: ValidInputFormat, b: ValidInputFormat, **options) -> SPLUResult:
     """Solve the linear system by reordering the system of eq.
 
     Args:
@@ -113,7 +111,7 @@ def splu_solve(
 
     # get order
     reorder_method = options.pop("reorder") if "reorder" in options else "max_edge"
-    order = get_ordering(A, reorder_method, options)
+    order = get_ordering(A, reorder_method, **options)
 
     # reorder matrix and rhs
     A = A[np.ix_(order, order)]
