@@ -26,7 +26,7 @@ dependencies = [
     "numpy",
     "scipy",
     "qalcore@git+https://github.com/QuantumApplicationLab/qalcore",
-    "matrix_reordering@git+https://github.com/QuantumApplicationLab/matrix_reordering.git@proof-of-concept-classical-nico",
+    "qreorder@git+https://github.com/QuantumApplicationLab/matrix_reordering.git@proof-of-concept-classical-nico",
 ]
 description = "Quantum version of Newton-Raphson algorithm"
 keywords = ["optimization", "quantum"]
