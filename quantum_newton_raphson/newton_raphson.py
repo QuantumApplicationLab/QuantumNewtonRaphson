@@ -60,7 +60,7 @@ def newton_raphson(
         result = linear_solver(
             grad(current_solution, **func_options),
             func_values,
-            options=linear_solver_options,
+            **linear_solver_options,
         )
         linear_solver_results.append(result)
 

@@ -27,6 +27,7 @@ jobs:
           python --version
       - name: Upgrade pip and install dependencies
         run: |
+          git config --global url."https://${{ secrets.ACCESS_TOKEN }}@github".insteadOf https://github
           python -m pip install --upgrade pip setuptools
           python -m pip install .[dev,publishing]
       - name: Install pandoc using apt

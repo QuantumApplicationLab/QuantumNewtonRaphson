@@ -1,4 +1,5 @@
 """Tests for the quantum_newton_raphson.my_module module."""
+
 import numpy as np
 import pytest
 from scipy.sparse import random as sprand
@@ -14,7 +15,7 @@ size = 5
 )
 def test_splu_solve_default(A, b, options):
     """Test the sparse LU solver."""
-    results = splu_solve(A, b, options)
+    results = splu_solve(A, b, **options)
     assert np.allclose(A.dot(results.solution), b)
 
 
@@ -24,5 +25,5 @@ def test_splu_solve_default(A, b, options):
 @pytest.mark.xfail
 def test_splu_solve_quantum(A, b, options):
     """Test the sparse LU solver using quantum reordering."""
-    results = splu_solve(A, b, options)
+    results = splu_solve(A, b, **options)
     assert np.allclose(A.dot(results.solution), b)

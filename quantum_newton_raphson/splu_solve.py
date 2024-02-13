@@ -1,7 +1,8 @@
-from typing import Dict
 from typing import Tuple
 from typing import Union
 import numpy as np
+from qreorder.classical_ordering import find_ordering as find_reordering_classical
+from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
 from scipy.sparse import sparray
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
@@ -11,7 +12,7 @@ from .utils import preprocess_data
 ValidInputFormat = Union[sparray, Tuple, np.ndarray]
 
 
-def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
+def get_ordering(A: sparray, reorder_method, **options) -> np.ndarray:
     """Get the reordering.
 
     Args:
@@ -23,9 +24,10 @@ def get_ordering(A: sparray, reorder_method: str, options: Dict) -> np.ndarray:
         np.ndarray: ordering indices
     """
     reordering_functions = {
-        "max_edge": get_max_edge_ordering,
-        "quantum": get_quantum_ordering,
         "no_reordering": get_orginal_ordering,
+        "max_edge": get_max_edge_ordering,
+        "classical": get_classical_minimal_fill_ordering,
+        "quantum": get_quantum_minimal_fill_ordering,
     }
 
     if reorder_method not in reordering_functions:
@@ -64,24 +66,35 @@ def get_max_edge_ordering(A: sparray) -> np.ndarray:
     return np.array(idx).ravel()
 
 
-def get_quantum_ordering(A: sparray, options: Dict = {}) -> np.ndarray:
-    """Get the ordering of the matrix element following the quantum approach.
+def get_classical_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
+    """Get the classical minimal fill ordering classicaly.
 
     Args:
-        A (sparray): inout matrix
-        options (Dict, optional): options of the quantum routine Defaults to {}.
+        A (sparray): Input of the matrix
+        **kwargs(Dict): options for the ordering method
 
     Returns:
         np.ndarray: ordering indices
     """
-    raise NotImplementedError(
-        "Quantum routine for matrix reordeing not implemented yet"
-    )
+    idx, _ = find_reordering_classical(A, **kwargs)
+    return idx
 
 
-def splu_solve(
-    A: ValidInputFormat, b: ValidInputFormat, options: Dict = {}
-) -> SPLUResult:
+def get_quantum_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
+    """Get the ordering of the matrix element following the quantum approach.
+
+    Args:
+        A (sparray): inout matrix
+        **kwargs (Dict, optional): options of the quantum routine Defaults to {}.
+
+    Returns:
+        np.ndarray: ordering indices
+    """
+    idx, _ = find_reordering_quantum(A, **kwargs)
+    return idx
+
+
+def splu_solve(A: ValidInputFormat, b: ValidInputFormat, **options) -> SPLUResult:
     """Solve the linear system by reordering the system of eq.
 
     Args:
@@ -97,7 +110,7 @@ def splu_solve(
 
     # get order
     reorder_method = options.pop("reorder") if "reorder" in options else "max_edge"
-    order = get_ordering(A, reorder_method, options)
+    order = get_ordering(A, reorder_method, **options)
 
     # reorder matrix and rhs
     A = A[np.ix_(order, order)]

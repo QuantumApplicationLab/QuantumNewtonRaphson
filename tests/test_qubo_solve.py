@@ -1,4 +1,5 @@
 """Tests for the quantum_newton_raphson.my_module module."""
+
 import numpy as np
 import pytest
 from qalcore.dwave.qubols.encodings import EfficientEncoding
