@@ -1,6 +1,6 @@
 import numpy as np
-from qalcore.qiskit.vqls import VQLS
 from scipy.sparse import sparray
+from vqls_prototype import VQLS
 from .base_solver import BaseSolver
 from .result import VQLSResult
 from .utils import preprocess_data
