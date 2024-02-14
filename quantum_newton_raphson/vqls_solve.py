@@ -1,96 +1,105 @@
-from typing import Dict
 import numpy as np
 from qalcore.qiskit.vqls import VQLS
 from scipy.sparse import sparray
+from .base_solver import BaseSolver
 from .result import VQLSResult
 from .utils import preprocess_data
 
 
-def vqlssolve(
-    A: sparray, b: np.ndarray, quantum_solver_options: Dict = {}
-) -> VQLSResult:
-    """Solve the linear system using VQLS.
+class VQLS_SOLVER(BaseSolver):
+    """Solver using VQLS.
 
     Args:
-        A (sparray): matrix of the linear syste
-        b (np.ndarray): righ habd side vector
-        quantum_solver_options (Dict): options for the solver
+        BaseSolver (object): base solver classe
     """
 
-    def post_process_vqls_solution(A, y, x):
-        """Retreive the  norm and direction of the solution vector.
+    def __init__(self, **quantum_solver_options):
+        """Init the solver and process options."""
+        # extract required options for the vqls solver
+        self.estimator = quantum_solver_options.pop("estimator")
+        self.ansatz = quantum_solver_options.pop("ansatz")
+        self.optimizer = quantum_solver_options.pop("optimizer")
 
-           VQLS provides a normalized form of the solution vector
-           that can also have a -1 prefactor. This routine retrieves
-           the un-normalized solution vector with the correct prefactor.
+        # extract optional options for the vqls solver
+        self.sampler = (
+            quantum_solver_options.pop("sampler")
+            if "sampler" in quantum_solver_options
+            else None
+        )
+        self.initial_point = (
+            quantum_solver_options.pop("initial_point")
+            if "initial_point" in quantum_solver_options
+            else None
+        )
+        self.gradient = (
+            quantum_solver_options.pop("gradient")
+            if "gradient" in quantum_solver_options
+            else None
+        )
+        self.max_evals_grouped = (
+            quantum_solver_options.pop("max_evals_grouped")
+            if "max_evals_grouped" in quantum_solver_options
+            else 1
+        )
+
+        self.quantum_solver_options = quantum_solver_options
+
+    def __call__(self, A: sparray, b: np.ndarray) -> VQLSResult:
+        """Solve the linear system using VQLS.
 
         Args:
-            A (np.ndarray): matrix of the linear system
-            y (np.ndarray): rhs of the linear system
-            x (np.ndarray): proposed solution
+            A (sparray): matrix of the linear syste
+            b (np.ndarray): righ habd side vector
+            quantum_solver_options (Dict): options for the solver
         """
-        Ax = A @ x
-        normy = np.linalg.norm(y)
-        normAx = np.linalg.norm(Ax)
-        prefac = normy / normAx
 
-        if np.dot(Ax * prefac, y) < 0:
-            prefac *= -1
-        sol = prefac * x
-        return sol
+        def post_process_vqls_solution(A, y, x):
+            """Retreive the  norm and direction of the solution vector.
 
-    # convert the input data inot a spsparse compatible format
-    A, b = preprocess_data(A, b)
+            VQLS provides a normalized form of the solution vector
+            that can also have a -1 prefactor. This routine retrieves
+            the un-normalized solution vector with the correct prefactor.
 
-    # preprocess the initial matrix
-    A = A.todense()
+            Args:
+                A (np.ndarray): matrix of the linear system
+                y (np.ndarray): rhs of the linear system
+                x (np.ndarray): proposed solution
+            """
+            Ax = A @ x
+            normy = np.linalg.norm(y)
+            normAx = np.linalg.norm(Ax)
+            prefac = normy / normAx
 
-    # preprocess the b vector
-    norm_b = np.linalg.norm(b)
-    bnorm = np.copy(b)
-    bnorm /= norm_b
+            if np.dot(Ax * prefac, y) < 0:
+                prefac *= -1
+            sol = prefac * x
+            return sol
 
-    # extract required options for the vqls solver
-    estimator = quantum_solver_options.pop("estimator")
-    ansatz = quantum_solver_options.pop("ansatz")
-    optimizer = quantum_solver_options.pop("optimizer")
+        # convert the input data inot a spsparse compatible format
+        A, b = preprocess_data(A, b)
 
-    # extract optional options for the vqls solver
-    sampler = (
-        quantum_solver_options.pop("sampler")
-        if "sampler" in quantum_solver_options
-        else None
-    )
-    initial_point = (
-        quantum_solver_options.pop("initial_point")
-        if "initial_point" in quantum_solver_options
-        else None
-    )
-    gradient = (
-        quantum_solver_options.pop("gradient")
-        if "gradient" in quantum_solver_options
-        else None
-    )
-    max_evals_grouped = (
-        quantum_solver_options.pop("max_evals_grouped")
-        if "max_evals_grouped" in quantum_solver_options
-        else 1
-    )
+        # preprocess the initial matrix
+        A = A.todense()  # <= TO DO: allow for sparse matrix
 
-    # solver
-    vqls = VQLS(
-        estimator,
-        ansatz,
-        optimizer,
-        sampler=sampler,
-        initial_point=initial_point,
-        gradient=gradient,
-        max_evals_grouped=max_evals_grouped,
-        options=quantum_solver_options,
-    )
+        # preprocess the b vector
+        norm_b = np.linalg.norm(b)
+        bnorm = np.copy(b)
+        bnorm /= norm_b
 
-    # solver
-    res = vqls.solve(A, b)
+        # solver
+        vqls = VQLS(
+            self.estimator,
+            self.ansatz,
+            self.optimizer,
+            sampler=self.sampler,
+            initial_point=self.initial_point,
+            gradient=self.gradient,
+            max_evals_grouped=self.max_evals_grouped,
+            options=self.quantum_solver_options,
+        )
 
-    # extract the results
-    return VQLSResult(post_process_vqls_solution(A, b, res.vector))
+        # solver
+        res = vqls.solve(A, b)
+
+        # extract the results
+        return VQLSResult(post_process_vqls_solution(A, b, res.vector))

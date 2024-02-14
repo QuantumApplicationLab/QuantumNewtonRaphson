@@ -2,7 +2,7 @@ from typing import Callable
 import numpy as np
 from numpy.linalg import norm
 from .result import NewtonRaphsonResult
-from .splu_solve import splu_solve
+from .splu_solve import SPLU_SOLVER
 from .utils import bind_func_to_grad
 from .utils import finite_difference_grads
 
@@ -14,8 +14,7 @@ def newton_raphson(
     tol: float = 1e-10,
     max_iter: int = 100,
     func_options: dict = {},
-    linear_solver: Callable = splu_solve,
-    linear_solver_options={"reorder": "max_edge"},
+    linear_solver: Callable = SPLU_SOLVER(),
 ):
     """Newton Raphson routine.
 
@@ -57,11 +56,7 @@ def newton_raphson(
         n_iter += 1
 
         # solve linear system
-        result = linear_solver(
-            grad(current_solution, **func_options),
-            func_values,
-            **linear_solver_options,
-        )
+        result = linear_solver(grad(current_solution, **func_options), func_values)
         linear_solver_results.append(result)
 
         # update solution

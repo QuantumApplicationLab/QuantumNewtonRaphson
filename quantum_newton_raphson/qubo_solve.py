@@ -1,39 +1,50 @@
-from typing import Dict
 import numpy as np
 from qalcore.dwave.qubols.encodings import EfficientEncoding
 from qalcore.dwave.qubols.qubols import QUBOLS
 from scipy.sparse import sparray
+from .base_solver import BaseSolver
 from .result import QUBOResult
 from .utils import preprocess_data
 
 
-def qubosolve_real(A: sparray, b: np.ndarray, options: Dict = {}) -> QUBOResult:
-    """Solve a real system of euqations using QUBO linear solver.
+class QUBO_SOLVER(BaseSolver):
+    """Solve the LS using a qubo.
 
     Args:
-        A (sparray): input matrix
-        b (np.ndarray): right hand side
-        options (Dict, optional): Options for the quantum solver. Defaults to {}.
-
-    Returns:
-        QUBOResult: solution of the system
+        BaseSovler (object): base class
     """
-    # convert the input data inot a spsparse compatible format
-    A, b = preprocess_data(A, b)
 
-    # preprocess options
-    if "encoding" not in options:
-        options["encoding"] = EfficientEncoding
+    def __init__(self, **options):
+        """Init the solver and options."""
+        self.options = options
 
-    # preprocess the b vector
-    norm_b = np.linalg.norm(b)
-    bnorm = np.copy(b)
-    bnorm /= norm_b
+        # preprocess options
+        if "encoding" not in self.options:
+            self.options["encoding"] = EfficientEncoding
 
-    # solve
-    update = QUBOLS(options).solve(A, bnorm)
+    def __call__(self, A: sparray, b: np.ndarray) -> QUBOResult:
+        """Solve a real system of euqations using QUBO linear solver.
 
-    # postporcess solution
-    update *= norm_b
+        Args:
+            A (sparray): input matrix
+            b (np.ndarray): right hand side
+            options (Dict, optional): Options for the quantum solver. Defaults to {}.
 
-    return QUBOResult(update)
+        Returns:
+            QUBOResult: solution of the system
+        """
+        # convert the input data inot a spsparse compatible format
+        A, b = preprocess_data(A, b)
+
+        # preprocess the b vector
+        # norm_b = np.linalg.norm(b)
+        # bnorm = np.copy(b)
+        # bnorm /= norm_b
+
+        # solve
+        sol = QUBOLS(self.options).solve(A, b)
+
+        # postporcess solution
+        # sol *= norm_b
+
+        return QUBOResult(sol)

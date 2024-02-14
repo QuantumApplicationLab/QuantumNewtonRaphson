@@ -1,15 +1,13 @@
-from typing import Tuple
-from typing import Union
 import numpy as np
 from qreorder.classical_ordering import find_ordering as find_reordering_classical
 from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
 from scipy.sparse import sparray
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
+from .base_solver import BaseSolver
+from .base_solver import ValidInputFormat
 from .result import SPLUResult
 from .utils import preprocess_data
-
-ValidInputFormat = Union[sparray, Tuple, np.ndarray]
 
 
 def get_ordering(A: sparray, reorder_method, **options) -> np.ndarray:
@@ -94,32 +92,46 @@ def get_quantum_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
     return idx
 
 
-def splu_solve(A: ValidInputFormat, b: ValidInputFormat, **options) -> SPLUResult:
-    """Solve the linear system by reordering the system of eq.
+class SPLU_SOLVER(BaseSolver):
+    """Solve the linear sysem using SPLU.
 
     Args:
-        A (ValidInputFormat): input matrix
-        b (ValidInputFormat): input rhs
-        options (dict, optional): options for the reordering. Defaults to {}.
-
-    Returns:
-        SPLUResult: object containing all the results of the solver
+        BaseSolver (class): base class
     """
-    # convert the input data inot a spsparse compatible format
-    A, b = preprocess_data(A, b)
 
-    # get order
-    reorder_method = options.pop("reorder") if "reorder" in options else "max_edge"
-    order = get_ordering(A, reorder_method, **options)
+    def __init__(self, **options):
+        """init."""
+        self.options = options
 
-    # reorder matrix and rhs
-    A = A[np.ix_(order, order)]
-    b = b[order]
+        # get order
+        self.reorder_method = (
+            self.options.pop("reorder") if "reorder" in self.options else "max_edge"
+        )
 
-    # solve
-    solver = splu(A, permc_spec="NATURAL")
-    x = solver.solve(b)
+    def __call__(self, A: ValidInputFormat, b: ValidInputFormat) -> SPLUResult:
+        """Solve the linear system by reordering the system of eq.
 
-    # reorder solution
-    x = x[np.argsort(order)]
-    return SPLUResult(x, solver)
+        Args:
+            A (ValidInputFormat): input matrix
+            b (ValidInputFormat): input rhs
+            options (dict, optional): options for the reordering. Defaults to {}.
+
+        Returns:
+            SPLUResult: object containing all the results of the solver
+        """
+        # convert the input data inot a spsparse compatible format
+        A, b = preprocess_data(A, b)
+
+        order = get_ordering(A, self.reorder_method, **self.options)
+
+        # reorder matrix and rhs
+        A = A[np.ix_(order, order)]
+        b = b[order]
+
+        # solve
+        solver = splu(A, permc_spec="NATURAL")
+        x = solver.solve(b)
+
+        # reorder solution
+        x = x[np.argsort(order)]
+        return SPLUResult(x, solver)

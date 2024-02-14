@@ -1,4 +1,5 @@
 """Tests for the quantum_newton_raphson.my_module module."""
+
 import numpy as np
 from quantum_newton_raphson.newton_raphson import newton_raphson
 
