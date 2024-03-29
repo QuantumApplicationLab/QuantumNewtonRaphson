@@ -1,7 +1,10 @@
 import numpy as np
-from qreorder.classical_ordering import find_ordering as find_reordering_classical
-from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
-from scipy.sparse import sparray
+from numpy.typing import ArrayLike
+
+# from qreorder.classical_ordering import find_ordering as find_reordering_classical
+# from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
+from qreorder.core import Solver
+from scipy.sparse import spmatrix
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
 from .base_solver import BaseSolver
@@ -10,86 +13,36 @@ from .result import SPLUResult
 from .utils import preprocess_data
 
 
-def get_ordering(A: sparray, reorder_method, **options) -> np.ndarray:
-    """Get the reordering.
+class MaxEdgeSolver(Solver):
+    """Solver for finding the reordering by max edge."""
 
-    Args:
-        A (sparray): input matrix
-        reorder_method (str): method to get the ordering
-        options (Dict): options of the reodering method
+    def get_ordering(self, matrix: ArrayLike | spmatrix) -> list[int]:
+        """Get ordering of the matrix using the maximum number of edges.
 
-    Returns:
-        np.ndarray: ordering indices
-    """
-    reordering_functions = {
-        "no_reordering": get_orginal_ordering,
-        "max_edge": get_max_edge_ordering,
-        "classical": get_classical_minimal_fill_ordering,
-        "quantum": get_quantum_minimal_fill_ordering,
-    }
+        Args:
+            matrix (sparray): input matrix
 
-    if reorder_method not in reordering_functions:
-        raise ValueError(
-            "Ordering method not recognized, valid options are {}".format(
-                list(reordering_functions.keys())
-            )
-        )
-
-    return reordering_functions[reorder_method](A, **options)
+        Returns:
+            np.ndarray: ordering indices
+        """
+        idx = np.argsort(triu(matrix, k=1).sum(1).flatten())
+        return np.array(idx).ravel()
 
 
-def get_orginal_ordering(A: sparray) -> np.ndarray:
-    """Return the original ordering.
+class NoReorderSolver(Solver):
+    """Solver that returns the original ordering to use as default."""
 
-    Args:
-        A (sparray): input matrix
+    def get_ordering(self, matrix: ArrayLike | spmatrix) -> list[int]:
+        """Return the original ordering.
 
-    Returns:
-        np.ndarray: ordering indices
-    """
-    size = A.shape[0]
-    return np.array(range(size))
+        Args:
+            matrix (sparray): input matrix
 
-
-def get_max_edge_ordering(A: sparray) -> np.ndarray:
-    """Get ordering of the matrix using the maximum number of edges.
-
-    Args:
-        A (sparray): input matrix
-
-    Returns:
-        np.ndarray: ordering indices
-    """
-    idx = np.argsort(triu(A, k=1).sum(1).flatten())
-    return np.array(idx).ravel()
-
-
-def get_classical_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
-    """Get the classical minimal fill ordering classicaly.
-
-    Args:
-        A (sparray): Input of the matrix
-        **kwargs(Dict): options for the ordering method
-
-    Returns:
-        np.ndarray: ordering indices
-    """
-    idx, _ = find_reordering_classical(A, **kwargs)
-    return idx
-
-
-def get_quantum_minimal_fill_ordering(A: sparray, **kwargs) -> np.ndarray:
-    """Get the ordering of the matrix element following the quantum approach.
-
-    Args:
-        A (sparray): inout matrix
-        **kwargs (Dict, optional): options of the quantum routine Defaults to {}.
-
-    Returns:
-        np.ndarray: ordering indices
-    """
-    idx, _ = find_reordering_quantum(A, **kwargs)
-    return idx
+        Returns:
+            np.ndarray: ordering indices
+        """
+        size = matrix.shape[0]
+        return np.array(range(size))
 
 
 class SPLU_SOLVER(BaseSolver):
@@ -99,14 +52,13 @@ class SPLU_SOLVER(BaseSolver):
         BaseSolver (class): base class
     """
 
-    def __init__(self, **options):
-        """init."""
-        self.options = options
+    def __init__(self, reorder_solver: Solver = NoReorderSolver()):
+        """Solver to solve the linear system using a reordering approach.
 
-        # get order
-        self.reorder_method = (
-            self.options.pop("reorder") if "reorder" in self.options else "max_edge"
-        )
+        Args:
+            reorder_solver (Solver, optional): Solver to obtain the reordering indices. Defaults NoReorderSolver().
+        """
+        self.reorder_solver = reorder_solver
 
     def __call__(self, A: ValidInputFormat, b: ValidInputFormat) -> SPLUResult:
         """Solve the linear system by reordering the system of eq.
@@ -119,10 +71,11 @@ class SPLU_SOLVER(BaseSolver):
         Returns:
             SPLUResult: object containing all the results of the solver
         """
-        # convert the input data inot a spsparse compatible format
+        # convert the input data into a spsparse compatible format
         A, b = preprocess_data(A, b)
 
-        order = get_ordering(A, self.reorder_method, **self.options)
+        # get the reordering of the matrix
+        order = self.reorder_solver.get_ordering(A)
 
         # reorder matrix and rhs
         A = A[np.ix_(order, order)]
