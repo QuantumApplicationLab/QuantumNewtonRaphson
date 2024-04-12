@@ -8,11 +8,7 @@ from .utils import preprocess_data
 
 
 class QUBO_SOLVER(BaseSolver):
-    """Solve the LS using a qubo.
-
-    Args:
-        BaseSovler (object): base class
-    """
+    """Solve the linear system using a QUBO formulation."""
 
     def __init__(self, **options):
         """Init the solver and options."""
@@ -28,7 +24,6 @@ class QUBO_SOLVER(BaseSolver):
         Args:
             A (sparray): input matrix
             b (np.ndarray): right hand side
-            options (Dict, optional): Options for the quantum solver. Defaults to {}.
 
         Returns:
             QUBOResult: solution of the system
@@ -36,15 +31,18 @@ class QUBO_SOLVER(BaseSolver):
         # convert the input data inot a spsparse compatible format
         A, b = preprocess_data(A, b)
 
-        # preprocess the b vector
-        # norm_b = np.linalg.norm(b)
-        # bnorm = np.copy(b)
-        # bnorm /= norm_b
+        # if self.options["normalize"]:
+        #     # preprocess the b vector
+        #     norm_b = np.linalg.norm(b)
+        #     original_b = np.copy(b)
+        #     b /= norm_b
 
         # solve
         sol = QUBOLS(self.options).solve(A, b)
 
-        # postporcess solution
-        # sol *= norm_b
+        # if self.options["normalize"]:
+        #     # postporcess solution
+        #     b = original_b
+        #     sol *= norm_b
 
         return QUBOResult(sol)

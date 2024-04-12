@@ -15,10 +15,11 @@ def newton_raphson(
     max_iter: int = 100,
     func_options: dict = {},
     linear_solver: Callable = SPLU_SOLVER(),
+    verbose: bool = False,
 ):
     """Newton Raphson routine.
 
-    Orignal routine taken from PyPSA
+    Orignal adapted from PyPSA
     Solve f(x) = 0 with initial guess for x and dfdx(x).
     dfdx(x) should return a sparse Jacobian.  Terminate if error on norm
     of f(x) is < x_tol or there were more than lim_iter iterations.
@@ -32,6 +33,7 @@ def newton_raphson(
         func_options (dict, optional): options to pass to the callbale functions
         linear_solver (callable, optional): linear solver used to solve the system
         linear_solver_options (dict, optional): options for the linear system
+        verbose (bool): print info regarding the solver
 
     Returns:
         OptimizationResult: Result of the optimization
@@ -53,6 +55,10 @@ def newton_raphson(
 
     # loop while not converged
     while error > tol and n_iter < max_iter:
+
+        if verbose:
+            print(f"{n_iter}/{max_iter} error = {error}({tol})")
+
         n_iter += 1
 
         # solve linear system
@@ -71,9 +77,7 @@ def newton_raphson(
     # check for convergence
     if error > tol:
         print(
-            "Warning, we didn't reach the required tolerance within %d iterations, error is at %f.",
-            n_iter,
-            error,
+            f"Warning, we didn't reach the required tolerance within {n_iter} iterations, error is at {error}"
         )
     elif not np.isnan(error):
         converged = True

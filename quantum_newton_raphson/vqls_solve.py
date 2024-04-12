@@ -5,12 +5,14 @@ from .base_solver import BaseSolver
 from .result import VQLSResult
 from .utils import preprocess_data
 
+from qiskit.algorithms.optimizers import COBYLA
+
 
 class VQLS_SOLVER(BaseSolver):
     """Solver using VQLS.
 
     Args:
-        BaseSolver (object): base solver classe
+        BaseSolver (object): base solver class
     """
 
     def __init__(self, **quantum_solver_options):
@@ -81,11 +83,6 @@ class VQLS_SOLVER(BaseSolver):
         # preprocess the initial matrix
         A = A.todense()  # <= TO DO: allow for sparse matrix
 
-        # preprocess the b vector
-        norm_b = np.linalg.norm(b)
-        bnorm = np.copy(b)
-        bnorm /= norm_b
-
         # solver
         vqls = VQLS(
             self.estimator,
@@ -102,4 +99,7 @@ class VQLS_SOLVER(BaseSolver):
         res = vqls.solve(A, b)
 
         # extract the results
-        return VQLSResult(post_process_vqls_solution(A, b, res.vector))
+        x = post_process_vqls_solution(A, b, res.vector)
+        ref = np.linalg.solve(A, b)
+        residue = np.linalg.norm(A @ x - b)
+        return VQLSResult(x, residue, vqls.logger, ref)

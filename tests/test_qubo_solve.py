@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from qalcore.dwave.qubols.encodings import EfficientEncoding
+from qubols.encodings import EfficientEncoding
 from scipy.sparse import random as sprand
 from quantum_newton_raphson.qubo_solve import QUBO_SOLVER
 
