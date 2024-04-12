@@ -16,7 +16,7 @@ from .utils import preprocess_data
 class MaxEdgeSolver(Solver):
     """Solver for finding the reordering by max edge."""
 
-    def get_ordering(self, matrix: ArrayLike | spmatrix) -> list[int]:
+    def get_ordering(self, matrix: ArrayLike) -> list[int]:
         """Get ordering of the matrix using the maximum number of edges.
 
         Args:
@@ -32,7 +32,7 @@ class MaxEdgeSolver(Solver):
 class NoReorderSolver(Solver):
     """Solver that returns the original ordering to use as default."""
 
-    def get_ordering(self, matrix: ArrayLike | spmatrix) -> list[int]:
+    def get_ordering(self, matrix: ArrayLike) -> list[int]:
         """Return the original ordering.
 
         Args:

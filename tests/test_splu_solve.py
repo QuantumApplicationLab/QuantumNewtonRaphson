@@ -2,11 +2,12 @@
 
 import numpy as np
 import pytest
-from scipy.sparse import random as sprand
-from quantum_newton_raphson.splu_solve import SPLU_SOLVER
-from quantum_newton_raphson.splu_solve import MaxEdgeSolver, NoReorderSolver
 from qreorder.classical import MinimumChordalCompletion
 from qreorder.quantum import QuantumSolver
+from scipy.sparse import random as sprand
+from quantum_newton_raphson.splu_solve import SPLU_SOLVER
+from quantum_newton_raphson.splu_solve import MaxEdgeSolver
+from quantum_newton_raphson.splu_solve import NoReorderSolver
 
 size = 5
 
