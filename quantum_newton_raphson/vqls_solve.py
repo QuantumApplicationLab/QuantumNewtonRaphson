@@ -4,8 +4,7 @@ from vqls_prototype import VQLS
 from .base_solver import BaseSolver
 from .result import VQLSResult
 from .utils import preprocess_data
-
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit.primitives import Estimator
 
 
 class VQLS_SOLVER(BaseSolver):
@@ -85,7 +84,7 @@ class VQLS_SOLVER(BaseSolver):
 
         # solver
         vqls = VQLS(
-            self.estimator,
+            Estimator(),  # bugs when the estimator is not reset ...
             self.ansatz,
             self.optimizer,
             sampler=self.sampler,
