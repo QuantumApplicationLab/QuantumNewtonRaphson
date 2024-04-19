@@ -26,7 +26,7 @@ dependencies = [
     "numpy",
     "scipy",
     "qubols@git+https://github.com/QuantumApplicationLab/qubols",
-    "qreorder@git+https://github.com/QuantumApplicationLab/qreorder@prepare",
+    "qreorder@git+https://github.com/QuantumApplicationLab/qreorder",
 ]
 description = "Quantum version of Newton-Raphson algorithm"
 keywords = ["optimization", "quantum"]

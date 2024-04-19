@@ -18,7 +18,7 @@ def bind_func_to_grad(grad: Callable, func: Callable) -> Callable:
 
     Args:
         grad (Callable): method to compute the gradient
-        func (Callable): function we watn the gradient of
+        func (Callable): function we want the gradient of
 
     Returns:
         Callable: gradient function with the function binded to it

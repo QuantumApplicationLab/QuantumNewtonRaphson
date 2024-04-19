@@ -18,6 +18,9 @@ class QUBO_SOLVER(BaseSolver):
         if "encoding" not in self.options:
             self.options["encoding"] = EfficientEncoding
 
+        if "normalize" not in self.options:
+            self.options["normalize"] = False
+
     def __call__(self, A: sparray, b: np.ndarray) -> QUBOResult:
         """Solve a real system of euqations using QUBO linear solver.
 
@@ -31,18 +34,18 @@ class QUBO_SOLVER(BaseSolver):
         # convert the input data inot a spsparse compatible format
         A, b = preprocess_data(A, b)
 
-        # if self.options["normalize"]:
-        #     # preprocess the b vector
-        #     norm_b = np.linalg.norm(b)
-        #     original_b = np.copy(b)
-        #     b /= norm_b
+        if self.options["normalize"]:
+            # preprocess the b vector
+            norm_b = np.linalg.norm(b)
+            original_b = np.copy(b)
+            b /= norm_b
 
         # solve
         sol = QUBOLS(self.options).solve(A, b)
 
-        # if self.options["normalize"]:
-        #     # postporcess solution
-        #     b = original_b
-        #     sol *= norm_b
+        if self.options["normalize"]:
+            # postporcess solution
+            b = original_b
+            sol *= norm_b
 
         return QUBOResult(sol)
