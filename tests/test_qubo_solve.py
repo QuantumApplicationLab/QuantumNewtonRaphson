@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from qubols.encodings import EfficientEncoding
 from scipy.sparse import random as sprand
-from quantum_newton_raphson.qubo_solve import QUBO_SOLVER
+from quantum_newton_raphson.qubo_solver import QUBO_SOLVER
 
 size = 5
 

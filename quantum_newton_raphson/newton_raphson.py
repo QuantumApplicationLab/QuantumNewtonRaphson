@@ -2,7 +2,7 @@ from typing import Callable
 import numpy as np
 from numpy.linalg import norm
 from .result import NewtonRaphsonResult
-from .splu_solve import SPLU_SOLVER
+from .splu_solver import SPLU_SOLVER
 from .utils import bind_func_to_grad
 from .utils import finite_difference_grads
 

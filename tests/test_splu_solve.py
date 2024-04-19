@@ -5,9 +5,9 @@ import pytest
 from qreorder.classical import MinimumChordalCompletion
 from qreorder.quantum import QuantumSolver
 from scipy.sparse import random as sprand
-from quantum_newton_raphson.splu_solve import SPLU_SOLVER
-from quantum_newton_raphson.splu_solve import MaxEdgeSolver
-from quantum_newton_raphson.splu_solve import NoReorderSolver
+from quantum_newton_raphson.splu_solver import SPLU_SOLVER
+from quantum_newton_raphson.splu_solver import MaxEdgeSolver
+from quantum_newton_raphson.splu_solver import NoReorderSolver
 
 size = 5
 

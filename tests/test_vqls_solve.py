@@ -7,7 +7,7 @@ from qiskit.circuit.library import RealAmplitudes
 from qiskit.primitives import Estimator
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
-from quantum_newton_raphson.vqls_solve import VQLS_SOLVER
+from quantum_newton_raphson.vqls_solver import VQLS_SOLVER
 
 
 def create_random_matrix(size: int) -> sparray:

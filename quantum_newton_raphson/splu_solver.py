@@ -3,7 +3,8 @@ from numpy.typing import ArrayLike
 
 # from qreorder.classical_ordering import find_ordering as find_reordering_classical
 # from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
-from qreorder.core import Solver
+from qreorder.core import Solver as Reorder
+from qreorder.quantum import QuantumSolver as QUBOReorder
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
 from .base_solver import BaseSolver
@@ -12,7 +13,7 @@ from .result import SPLUResult
 from .utils import preprocess_data
 
 
-class MaxEdgeSolver(Solver):
+class MaxEdgeReorder(Reorder):
     """Solver for finding the reordering by max edge."""
 
     def get_ordering(self, matrix: ArrayLike) -> list[int]:
@@ -28,7 +29,7 @@ class MaxEdgeSolver(Solver):
         return np.array(idx).ravel()
 
 
-class NoReorderSolver(Solver):
+class NoReorder(Reorder):
     """Solver that returns the original ordering to use as default."""
 
     def get_ordering(self, matrix: ArrayLike) -> list[int]:
@@ -51,7 +52,7 @@ class SPLU_SOLVER(BaseSolver):
         BaseSolver (class): base class
     """
 
-    def __init__(self, reorder_solver: Solver = NoReorderSolver()):
+    def __init__(self, reorder_solver: Reorder = NoReorder()):
         """Solver to solve the linear system using a reordering approach.
 
         Args:
