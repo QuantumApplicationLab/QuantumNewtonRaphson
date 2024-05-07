@@ -52,13 +52,16 @@ class SPLU_SOLVER(BaseSolver):
         BaseSolver (class): base class
     """
 
-    def __init__(self, reorder_solver: Reorder = NoReorder()):
+    def __init__(self, **options):
         """Solver to solve the linear system using a reordering approach.
 
         Args:
             reorder_solver (Solver, optional): Solver to obtain the reordering indices. Defaults NoReorderSolver().
         """
-        self.reorder_solver = reorder_solver
+        self.options = options
+
+        if "reorder_solver" not in self.options:
+            self.options["reorder_solver"] = NoReorder()
 
     def __call__(self, A: ValidInputFormat, b: ValidInputFormat) -> SPLUResult:
         """Solve the linear system by reordering the system of eq.
@@ -75,7 +78,7 @@ class SPLU_SOLVER(BaseSolver):
         A, b = preprocess_data(A, b)
 
         # get the reordering of the matrix
-        order = self.reorder_solver.get_ordering(A)
+        order = self.options["reorder_solver"].get_ordering(A)
 
         # reorder matrix and rhs
         A = A[np.ix_(order, order)]

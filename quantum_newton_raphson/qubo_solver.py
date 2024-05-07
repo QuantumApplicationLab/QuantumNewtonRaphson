@@ -1,5 +1,6 @@
 import numpy as np
 from qubols.encodings import EfficientEncoding
+from qubols.encodings import RangedEfficientEncoding
 from qubols.qubols import QUBOLS
 from scipy.sparse import sparray
 from .base_solver import BaseSolver
@@ -16,7 +17,10 @@ class QUBO_SOLVER(BaseSolver):
 
         # preprocess options
         if "encoding" not in self.options:
-            self.options["encoding"] = EfficientEncoding
+            self.options["encoding"] = RangedEfficientEncoding
+
+        if "range" not in self.options:
+            self.options["range"] = 1.0
 
         self.normalise_rhs = False
         if "normalize" in self.options:
