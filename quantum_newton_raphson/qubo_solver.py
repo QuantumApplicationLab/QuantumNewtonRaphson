@@ -30,11 +30,11 @@ class QUBO_SOLVER(BaseSolver):
         if "normalize" in self.options:
             self.normalise_rhs = self.options.pop("normalize")
 
-        self._solver = QUBOLS
+        self._solver = QUBOLS(self.options)
         if "use_aequbols" in self.options:
             self.use_aequbols = self.options.pop("use_aequbols")
             if self.use_aequbols:
-                self._solver = AEQUBOLS
+                self._solver = AEQUBOLS(self.options)
 
     def __call__(self, A: sparray, b: np.ndarray) -> QUBOResult:
         """Solve a real system of euqations using QUBO linear solver.
@@ -56,7 +56,7 @@ class QUBO_SOLVER(BaseSolver):
             b /= norm_b
 
         # solve
-        sol = self._solver(self.options).solve(A, b)
+        sol = self._solver.solve(A, b)
 
         if self.normalise_rhs:
             # postporcess solution

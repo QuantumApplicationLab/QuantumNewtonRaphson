@@ -45,6 +45,17 @@ class VQLS_SOLVER(BaseSolver):
 
         self.quantum_solver_options = quantum_solver_options
 
+        self._solver = VQLS(
+            Estimator(),  # bugs when the estimator is not reset ...
+            self.ansatz,
+            self.optimizer,
+            sampler=self.sampler,
+            initial_point=self.initial_point,
+            gradient=self.gradient,
+            max_evals_grouped=self.max_evals_grouped,
+            options=self.quantum_solver_options,
+        )
+
     def __call__(self, A: sparray, b: np.ndarray) -> VQLSResult:
         """Solve the linear system using VQLS.
 
@@ -83,22 +94,10 @@ class VQLS_SOLVER(BaseSolver):
         A = A.todense()  # <= TO DO: allow for sparse matrix
 
         # solver
-        vqls = VQLS(
-            Estimator(),  # bugs when the estimator is not reset ...
-            self.ansatz,
-            self.optimizer,
-            sampler=self.sampler,
-            initial_point=self.initial_point,
-            gradient=self.gradient,
-            max_evals_grouped=self.max_evals_grouped,
-            options=self.quantum_solver_options,
-        )
-
-        # solver
-        res = vqls.solve(A, b)
+        res = self._solver.solve(A, b)
 
         # extract the results
         x = post_process_vqls_solution(A, b, res.vector)
         ref = np.linalg.solve(A, b)
         residue = np.linalg.norm(A @ x - b)
-        return VQLSResult(x, residue, vqls.logger, ref)
+        return VQLSResult(x, residue, self._solver.logger, ref)
