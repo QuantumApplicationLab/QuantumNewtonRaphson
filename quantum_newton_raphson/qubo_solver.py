@@ -1,4 +1,5 @@
 import numpy as np
+from qubols.aequbols import AEQUBOLS
 from qubols.encodings import EfficientEncoding
 from qubols.encodings import RangedEfficientEncoding
 from qubols.qubols import QUBOLS
@@ -22,9 +23,18 @@ class QUBO_SOLVER(BaseSolver):
         if "range" not in self.options:
             self.options["range"] = 1.0
 
+        if "offset" not in self.options:
+            self.options["offset"] = 0.0
+
         self.normalise_rhs = False
         if "normalize" in self.options:
             self.normalise_rhs = self.options.pop("normalize")
+
+        self._solver = QUBOLS
+        if "use_aequbols" in self.options:
+            self.use_aequbols = self.options.pop("use_aequbols")
+            if self.use_aequbols:
+                self._solver = AEQUBOLS
 
     def __call__(self, A: sparray, b: np.ndarray) -> QUBOResult:
         """Solve a real system of euqations using QUBO linear solver.
@@ -46,7 +56,7 @@ class QUBO_SOLVER(BaseSolver):
             b /= norm_b
 
         # solve
-        sol = QUBOLS(self.options).solve(A, b)
+        sol = self._solver(self.options).solve(A, b)
 
         if self.normalise_rhs:
             # postporcess solution
