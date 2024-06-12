@@ -3,6 +3,7 @@ from qubols.aequbols import AEQUBOLS
 from qubols.encodings import EfficientEncoding
 from qubols.encodings import RangedEfficientEncoding
 from qubols.qubols import QUBOLS
+from qubols.embedded_qubols import EmbeddedQUBOLS
 from scipy.sparse import sparray
 from .base_solver import BaseSolver
 from .result import QUBOResult
@@ -30,10 +31,22 @@ class QUBO_SOLVER(BaseSolver):
         if "normalize" in self.options:
             self.normalise_rhs = self.options.pop("normalize")
 
-        self._solver = QUBOLS(self.options)
-        if "use_aequbols" in self.options:
-            self.use_aequbols = self.options.pop("use_aequbols")
-            if self.use_aequbols:
+        if "embedded" in self.options:
+            self.embedded = self.options.pop("embedded")
+        else:
+            self.embedded = False
+
+        if self.embedded:
+            self._solver = EmbeddedQUBOLS(self.options)
+
+        else:
+            if "use_aequbols" in self.options:
+                self.use_aequbols = self.options.pop("use_aequbols")
+            else:
+                self.use_aequbols = False
+            if self.use_aequbols is False:
+                self._solver = QUBOLS(self.options)
+            else:
                 self._solver = AEQUBOLS(self.options)
 
     def __call__(self, A: sparray, b: np.ndarray) -> QUBOResult:

@@ -1,10 +1,11 @@
 import numpy as np
+from qiskit.primitives import Estimator
+from qiskit.quantum_info import SparsePauliOp
 from scipy.sparse import sparray
 from vqls_prototype import VQLS
 from .base_solver import BaseSolver
 from .result import VQLSResult
 from .utils import preprocess_data
-from qiskit.primitives import Estimator
 
 
 class VQLS_SOLVER(BaseSolver):
@@ -55,6 +56,7 @@ class VQLS_SOLVER(BaseSolver):
             max_evals_grouped=self.max_evals_grouped,
             options=self.quantum_solver_options,
         )
+        self.matrix_decomposition = None
 
     def __call__(self, A: sparray, b: np.ndarray) -> VQLSResult:
         """Solve the linear system using VQLS.
@@ -93,11 +95,17 @@ class VQLS_SOLVER(BaseSolver):
         # preprocess the initial matrix
         A = A.todense()  # <= TO DO: allow for sparse matrix
 
+        # use the input matrix of update the matrix decomposition
+        if self.matrix_decomposition is None:
+            self.matrix_decomposition = A
+        else:
+            self.matrix_decomposition.update_matrix(A)
+
         # solver
-        res = self._solver.solve(A, b)
+        res = self._solver.solve(self.matrix_decomposition, b)
 
         # extract the results
         x = post_process_vqls_solution(A, b, res.vector)
-        ref = np.linalg.solve(A, b)
+        ref = np.linalg.solve(A, b)  # <= of course we need to remove that at some point
         residue = np.linalg.norm(A @ x - b)
         return VQLSResult(x, residue, self._solver.logger, ref)
