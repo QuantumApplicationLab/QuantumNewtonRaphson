@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from qiskit.algorithms.optimizers import COBYLA
+from qiskit_algorithms.optimizers import COBYLA
 from qiskit.circuit.library import RealAmplitudes
 from qiskit.primitives import Estimator
 from scipy.sparse import random as sprand
