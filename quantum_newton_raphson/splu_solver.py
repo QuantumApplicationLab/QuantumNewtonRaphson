@@ -55,7 +55,9 @@ class SPLU_SOLVER(BaseSolver):
         """Solver to solve the linear system using a reordering approach.
 
         Args:
-            reorder_solver (Solver, optional): Solver to obtain the reordering indices. Defaults NoReorderSolver().
+            **options: Arbitrary keyword arguments. Supported options include:
+                reorder_solver (Solver, optional): Solver to obtain the reordering indices.
+                    Defaults to NoReorderSolver() if not provided.
         """
         self.options = options
 
