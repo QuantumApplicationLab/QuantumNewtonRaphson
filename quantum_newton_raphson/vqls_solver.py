@@ -1,6 +1,5 @@
 import numpy as np
 from qiskit.primitives import Estimator
-from qiskit.quantum_info import SparsePauliOp
 from scipy.sparse import sparray
 from vqls_prototype import VQLS
 from .base_solver import BaseSolver

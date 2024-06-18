@@ -4,7 +4,6 @@ from numpy.typing import ArrayLike
 # from qreorder.classical_ordering import find_ordering as find_reordering_classical
 # from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
 from qreorder.core import Solver as Reorder
-from qreorder.quantum import QuantumSolver as QUBOReorder
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
 from .base_solver import BaseSolver

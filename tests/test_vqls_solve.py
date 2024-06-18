@@ -2,9 +2,9 @@
 
 import numpy as np
 import pytest
-from qiskit_algorithms.optimizers import COBYLA
 from qiskit.circuit.library import RealAmplitudes
 from qiskit.primitives import Estimator
+from qiskit_algorithms.optimizers import COBYLA
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
 from quantum_newton_raphson.vqls_solver import VQLS_SOLVER
