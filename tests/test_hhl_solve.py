@@ -1,12 +1,11 @@
 """Tests for the quantum_newton_raphson.my_module module."""
 import numpy as np
 import pytest
-#from qiskit.algorithms.optimizers import COBYLA
 from qiskit.circuit.library import RealAmplitudes
 from qiskit.primitives import Estimator
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
-from quantum_newton_raphson.vqls_solve import vqlssolve
+from quantum_newton_raphson.hhl_solve import hhlsolve
 
 
 def create_random_matrix(size: int) -> sparray:
@@ -28,8 +27,8 @@ size = 4
     "options",
     [{"estimator": Estimator(), "ansatz": RealAmplitudes(2), "optimizer": COBYLA()}],
 )
-def test_vqls_solve_default(A, b, options):
+def test_hhl_solve_default(A, b, options):
     """Test the vqls solver."""
-    results = vqlssolve(A, b, options)
+    results = hhlsolve(A, b, options)
     if np.linalg.norm(A.dot(results.solution) - b) > 0.1:
-        pytest.skip("VQLS solution innacurate")
+        pytest.skip("HHL solution innacurate")
