@@ -1,6 +1,6 @@
+import math
 import numpy as np
 from qiskit.primitives import Estimator
-from qiskit.quantum_info import SparsePauliOp
 from scipy.sparse import sparray
 from vqls_prototype import VQLS
 from .base_solver import BaseSolver
@@ -67,7 +67,30 @@ class VQLS_SOLVER(BaseSolver):
             quantum_solver_options (Dict): options for the solver
         """
 
-        def post_process_vqls_solution(A, y, x):
+        def pad_input(A, y):
+            """Process the input data to pad to power of two size.
+
+            Args:
+                A (np.ndarray): matrix of the linear system
+                y (np.ndarray): rhs of the linear system
+            """
+            input_size = A.shape[0]
+            if np.log2(input_size).is_integer():
+                return A, y, input_size
+            else:
+                # new size
+                new_size = 2 ** int(np.ceil(np.log2(input_size)))
+
+                # pad matrix
+                Afull = np.eye(new_size)
+                Afull[:input_size, :input_size] = A
+
+                # pad vector
+                yfull = np.zeros(new_size)
+                yfull[:input_size] = y
+                return Afull, yfull, input_size
+
+        def post_process_vqls_solution(A, y, x, original_input_size):
             """Retreive the  norm and direction of the solution vector.
 
             VQLS provides a normalized form of the solution vector
@@ -78,16 +101,27 @@ class VQLS_SOLVER(BaseSolver):
                 A (np.ndarray): matrix of the linear system
                 y (np.ndarray): rhs of the linear system
                 x (np.ndarray): proposed solution
+                original_input_size (int): size of the original vector
             """
+            # unpad the data
+            A = A[:original_input_size, :original_input_size]
+            x = x[:original_input_size]
+            y = y[:original_input_size]
+
+            # compute the prefactor
             Ax = A @ x
             normy = np.linalg.norm(y)
             normAx = np.linalg.norm(Ax)
             prefac = normy / normAx
 
+            # possible flip sign
             if np.dot(Ax * prefac, y) < 0:
                 prefac *= -1
             sol = prefac * x
-            return sol
+            return A, y, sol
+
+        # pad the input data if necessary
+        A, b, original_input_size = pad_input(A, b)
 
         # convert the input data inot a spsparse compatible format
         A, b = preprocess_data(A, b)
@@ -105,7 +139,9 @@ class VQLS_SOLVER(BaseSolver):
         res = self._solver.solve(self.matrix_decomposition, b)
 
         # extract the results
-        x = post_process_vqls_solution(A, b, res.vector)
+        A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)
+
         ref = np.linalg.solve(A, b)  # <= of course we need to remove that at some point
         residue = np.linalg.norm(A @ x - b)
+
         return VQLSResult(x, residue, self._solver.logger, ref)
