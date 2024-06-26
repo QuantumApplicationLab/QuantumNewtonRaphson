@@ -4,7 +4,6 @@ from numpy.typing import ArrayLike
 # from qreorder.classical_ordering import find_ordering as find_reordering_classical
 # from qreorder.quantum_ordering import find_ordering as find_reordering_quantum
 from qreorder.core import Solver as Reorder
-from qreorder.quantum import QuantumSolver as QUBOReorder
 from scipy.sparse import triu
 from scipy.sparse.linalg import splu
 from .base_solver import BaseSolver
@@ -56,7 +55,9 @@ class SPLU_SOLVER(BaseSolver):
         """Solver to solve the linear system using a reordering approach.
 
         Args:
-            reorder_solver (Solver, optional): Solver to obtain the reordering indices. Defaults NoReorderSolver().
+            **options: Arbitrary keyword arguments. Supported options include:
+                reorder_solver (Solver, optional): Solver to obtain the reordering indices.
+                    Defaults to NoReorderSolver() if not provided.
         """
         self.options = options
 

@@ -6,8 +6,8 @@ from qreorder.classical import MinimumChordalCompletion
 from qreorder.quantum import QuantumSolver
 from scipy.sparse import random as sprand
 from quantum_newton_raphson.splu_solver import SPLU_SOLVER
-from quantum_newton_raphson.splu_solver import MaxEdgeSolver
-from quantum_newton_raphson.splu_solver import NoReorderSolver
+from quantum_newton_raphson.splu_solver import MaxEdgeReorder
+from quantum_newton_raphson.splu_solver import NoReorder
 
 size = 5
 
@@ -16,7 +16,7 @@ size = 5
 @pytest.mark.parametrize("b", [np.random.rand(size)])
 @pytest.mark.parametrize(
     "options",
-    [{}, {"reorder_solver": MaxEdgeSolver()}, {"reorder_solver": NoReorderSolver()}],
+    [{}, {"reorder_solver": MaxEdgeReorder()}, {"reorder_solver": NoReorder()}],
 )
 def test_splu_solve_default(A, b, options):
     """Test the sparse LU solver."""
