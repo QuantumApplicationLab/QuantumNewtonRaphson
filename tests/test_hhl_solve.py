@@ -1,7 +1,6 @@
 """Tests for the quantum_newton_raphson.my_module module."""
 import numpy as np
 import pytest
-from qiskit.circuit.library import RealAmplitudes
 from qiskit.primitives import Estimator
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
@@ -25,10 +24,10 @@ size = 4
 @pytest.mark.parametrize("b", [np.random.rand(size)])
 @pytest.mark.parametrize(
     "options",
-    [{"estimator": Estimator(), "ansatz": RealAmplitudes(2), "optimizer": COBYLA()}],
+    [{"estimator": Estimator()}],
 )
 def test_hhl_solve_default(A, b, options):
-    """Test the vqls solver."""
+    """Test the hhl solver."""
     results = hhlsolve(A, b, options)
     if np.linalg.norm(A.dot(results.solution) - b) > 0.1:
         pytest.skip("HHL solution innacurate")
