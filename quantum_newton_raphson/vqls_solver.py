@@ -1,4 +1,3 @@
-import math
 import numpy as np
 from qiskit.primitives import Estimator
 from scipy.sparse import sparray
