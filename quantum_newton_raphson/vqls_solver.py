@@ -140,8 +140,12 @@ class VQLS_SOLVER(BaseSolver):
 
         # extract the results
         A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)
-
-        ref = np.linalg.solve(A, b)  # <= of course we need to remove that at some point
         residue = np.linalg.norm(A @ x - b)
+
+        # classical check
+        ref = np.linalg.solve(A, b)  # <= of course we need to remove that at some point
+
+        # save the matrix decomposition of the solver
+        self.matrix_decomposition = self._solver.matrix_circuits
 
         return VQLSResult(x, residue, self._solver.logger, ref)
