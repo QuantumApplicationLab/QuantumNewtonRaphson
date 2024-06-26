@@ -55,7 +55,10 @@ class VQLS_SOLVER(BaseSolver):
             max_evals_grouped=self.max_evals_grouped,
             options=self.quantum_solver_options,
         )
-        self.matrix_decomposition = None
+
+        # register the decomposed matrix so that we can
+        # update it instead of recalculating the decomposition
+        self.decomposed_matrix = None
 
     def __call__(self, A: sparray, b: np.ndarray) -> VQLSResult:
         """Solve the linear system using VQLS.
@@ -129,13 +132,15 @@ class VQLS_SOLVER(BaseSolver):
         A = A.todense()  # <= TO DO: allow for sparse matrix
 
         # use the input matrix of update the matrix decomposition
-        if self.matrix_decomposition is None:
-            self.matrix_decomposition = A
+        if self.decomposed_matrix is None:
+            # set it to the input matrix at the first call
+            self.decomposed_matrix = A
         else:
-            self.matrix_decomposition.update_matrix(A)
+            # update the matrix on the subsequent call
+            self.decomposed_matrix.update_matrix(A)
 
         # solver
-        res = self._solver.solve(self.matrix_decomposition, b)
+        res = self._solver.solve(self.decomposed_matrix, b)
 
         # extract the results
         A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)
@@ -144,7 +149,7 @@ class VQLS_SOLVER(BaseSolver):
         # classical check
         ref = np.linalg.solve(A, b)  # <= of course we need to remove that at some point
 
-        # save the matrix decomposition of the solver
-        self.matrix_decomposition = self._solver.matrix_circuits
+        # register the matrix decomposition of the solver
+        self.decomposed_matrix = self._solver.matrix_circuits
 
         return VQLSResult(x, residue, self._solver.logger, ref)
