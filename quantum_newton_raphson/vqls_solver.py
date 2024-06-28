@@ -64,7 +64,7 @@ class VQLS_SOLVER(BaseSolver):
         """Solve the linear system using VQLS.
 
         Args:
-            A (sparray): matrix of the linear syste
+            A (sparray): matrix of the linear system
             b (np.ndarray): righ habd side vector
             quantum_solver_options (Dict): options for the solver
         """
@@ -85,12 +85,37 @@ class VQLS_SOLVER(BaseSolver):
 
                 # pad matrix
                 Afull = np.eye(new_size)
-                Afull[:input_size, :input_size] = A
+                if isinstance(A, sparray):
+                    Afull[:input_size, :input_size] = A.todense()
+                else:
+                    Afull[:input_size, :input_size] = A
 
                 # pad vector
                 yfull = np.zeros(new_size)
                 yfull[:input_size] = y
                 return Afull, yfull, input_size
+
+        def precond(A, y):
+            """Apply a diagonal scaling preconditioning.
+
+            from the linear system :  Ax = b
+            we use a two sided preconditioner :  Q A P^{-1} (Px) = Qb.
+
+            with P = np.diag(np.sqrt(np.diag(A))) and Q = P^{-1}
+
+            Args:
+                A (np.ndarray): matrix of the linear system
+                y (np.ndarray): rhs of the linear system
+            """  # noqa: D205
+            if isinstance(A, sparray):
+                P = np.diag(np.sqrt(np.diag(A.todense())))
+            else:
+                P = np.diag(np.sqrt(np.diag(A)))
+
+            iP = np.diag(1.0 / np.diag(P))
+            Q = iP
+
+            return Q @ A @ iP, Q @ b, Q
 
         def post_process_vqls_solution(A, y, x, original_input_size):
             """Retreive the  norm and direction of the solution vector.
@@ -106,9 +131,9 @@ class VQLS_SOLVER(BaseSolver):
                 original_input_size (int): size of the original vector
             """
             # unpad the data
-            A = A[:original_input_size, :original_input_size]
-            x = x[:original_input_size]
-            y = y[:original_input_size]
+            # A = A[:original_input_size, :original_input_size]
+            # x = x[:original_input_size]
+            # y = y[:original_input_size]
 
             # compute the prefactor
             Ax = A @ x
@@ -120,7 +145,11 @@ class VQLS_SOLVER(BaseSolver):
             if np.dot(Ax * prefac, y) < 0:
                 prefac *= -1
             sol = prefac * x
-            return A, y, sol
+            return (
+                A[:original_input_size, :original_input_size],
+                y[:original_input_size],
+                sol[:original_input_size],
+            )
 
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
@@ -128,8 +157,11 @@ class VQLS_SOLVER(BaseSolver):
         # convert the input data inot a spsparse compatible format
         A, b = preprocess_data(A, b)
 
+        # precondition the matrix
+        A, b, Q = precond(A, b)
+
         # preprocess the initial matrix
-        A = A.todense()  # <= TO DO: allow for sparse matrix
+        # A = A.todense()  # <= TO DO: allow for sparse matrix
 
         # use the input matrix of update the matrix decomposition
         if self.decomposed_matrix is None:
@@ -152,4 +184,4 @@ class VQLS_SOLVER(BaseSolver):
         # register the matrix decomposition of the solver
         self.decomposed_matrix = self._solver.matrix_circuits
 
-        return VQLSResult(x, residue, self._solver.logger, ref)
+        return VQLSResult(x * np.diag(Q), residue, self._solver.logger, ref)
