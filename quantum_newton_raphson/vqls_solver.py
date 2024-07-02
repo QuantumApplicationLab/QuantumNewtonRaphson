@@ -44,6 +44,12 @@ class VQLS_SOLVER(BaseSolver):
             else 1
         )
 
+        self.preconditioning = (
+            quantum_solver_options.pop("preconditioning")
+            if "preconditioning" in quantum_solver_options
+            else None
+        )
+
         self.quantum_solver_options = quantum_solver_options
 
         self._solver = VQLS(
@@ -126,11 +132,40 @@ class VQLS_SOLVER(BaseSolver):
             sol = prefac * x
             return A, y, sol
 
+        def preconditioner(A, b):
+            """Precondition the linear system using a diagonal scaling preconditioner.
+
+            This function takes a sparse matrix A and a right-hand side vector b,
+            and returns the preconditioned matrix A_hat, the preconditioned vector b_hat,
+            and the inverse of the diagonal scaling matrix D_inv used for preconditioning.
+
+            Args:
+                A (scipy.sparse.sparray): The matrix of the linear system.
+                b (np.ndarray): The right-hand side vector of the linear system.
+
+            Returns:
+                A_hat (scipy.sparse.csc_matrix): The preconditioned matrix.
+                b_hat (np.ndarray): The preconditioned right-hand side vector.
+                D_inv (np.ndarray): The inverse of the diagonal scaling matrix used for preconditioning.
+            """
+            # Compute the diagonal preconditioner
+            D = np.diag(np.sqrt(np.diag(A.todense())))
+            D_inv = np.linalg.inv(D)
+
+            # Preconditioned system
+            A_hat = D_inv @ A @ D_inv
+            b_hat = D_inv @ b
+
+            return csc_matrix(A_hat), b_hat, D_inv
+
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
 
         # convert the input data inot a spsparse compatible format
         A, b = preprocess_data(A, b)
+
+        if self.preconditioning:
+            A, b, D_inv = preconditioner(A, b)
 
         # preprocess the initial matrix
         A = A.todense()  # <= TO DO: allow for sparse matrix
@@ -155,5 +190,10 @@ class VQLS_SOLVER(BaseSolver):
 
         # register the matrix decomposition of the solver
         self.decomposed_matrix = self._solver.matrix_circuits
+
+        if self.preconditioning:
+            # recover the solution of the original system
+            x = D_inv @ x
+            ref = D_inv @ x
 
         return VQLSResult(x, residue, self._solver.logger, ref)
