@@ -1,5 +1,6 @@
 import numpy as np
 from qiskit.primitives import Estimator
+from scipy.sparse import csc_matrix
 from scipy.sparse import sparray
 from vqls_prototype import VQLS
 from .base_solver import BaseSolver
@@ -73,7 +74,7 @@ class VQLS_SOLVER(BaseSolver):
             """Process the input data to pad to power of two size.
 
             Args:
-                A (np.ndarray): matrix of the linear system
+                A (sparray): matrix of the linear system
                 y (np.ndarray): rhs of the linear system
             """
             input_size = A.shape[0]
@@ -85,7 +86,10 @@ class VQLS_SOLVER(BaseSolver):
 
                 # pad matrix
                 Afull = np.eye(new_size)
-                Afull[:input_size, :input_size] = A
+                Afull[:input_size, :input_size] = A.todense()
+
+                # convert pad matrix into a sparse matrix
+                Afull = csc_matrix(Afull)
 
                 # pad vector
                 yfull = np.zeros(new_size)
