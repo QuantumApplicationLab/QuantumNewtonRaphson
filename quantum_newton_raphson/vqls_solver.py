@@ -158,8 +158,7 @@ class VQLS_SOLVER(BaseSolver):
             return csc_matrix(A_hat), b_hat, D_inv
 
         def remove_preconditioner(A_hat, b_hat, x_hat, D_inv):
-            """
-            Remove the diagonal scaling preconditioner from the preconditioned system.
+            """Remove the diagonal scaling preconditioner from the preconditioned system.
 
             This function takes the preconditioned matrix A_hat, the preconditioned vector b_hat,
             the solution of the preconditioned system x_hat, and the inverse of the diagonal scaling
