@@ -132,7 +132,7 @@ class VQLS_SOLVER(BaseSolver):
             sol = prefac * x
             return A, y, sol
 
-        def preconditioner(A, b):
+        def apply_preconditioner(A, b):
             """Precondition the linear system using a diagonal scaling preconditioner.
 
             This function takes a sparse matrix A and a right-hand side vector b,
@@ -155,8 +155,33 @@ class VQLS_SOLVER(BaseSolver):
             # Preconditioned system
             A_hat = D_inv @ A @ D_inv
             b_hat = D_inv @ b
-
             return csc_matrix(A_hat), b_hat, D_inv
+
+        def remove_preconditioner(A_hat, b_hat, x_hat, D_inv):
+            """
+            Remove the diagonal scaling preconditioner from the preconditioned system.
+
+            This function takes the preconditioned matrix A_hat, the preconditioned vector b_hat,
+            the solution of the preconditioned system x_hat, and the inverse of the diagonal scaling
+            matrix D_inv. It returns the original matrix A, the original right-hand side vector b,
+            and the recovered solution x.
+
+            Args:
+                A_hat (np.ndarray or scipy.sparse.sparray): The preconditioned matrix.
+                b_hat (np.ndarray): The preconditioned right-hand side vector.
+                x_hat (np.ndarray): The solution of the preconditioned system.
+                D_inv (np.ndarray): The inverse of the diagonal scaling matrix used for preconditioning.
+
+            Returns:
+                A (np.ndarray or scipy.sparse.sparray): The original matrix.
+                b (np.ndarray): The original right-hand side vector.
+                x (np.ndarray): The recovered solution to the original system.
+            """
+            D = np.linalg.inv(D_inv)
+            A = D @ A_hat @ D
+            b = D @ b_hat
+            x = D_inv @ x_hat
+            return A, b, x
 
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
@@ -165,7 +190,7 @@ class VQLS_SOLVER(BaseSolver):
         A, b = preprocess_data(A, b)
 
         if self.preconditioning:
-            A, b, D_inv = preconditioner(A, b)
+            A, b, D_inv = apply_preconditioner(A, b)
 
         # preprocess the initial matrix
         A = A.todense()  # <= TO DO: allow for sparse matrix
@@ -181,6 +206,10 @@ class VQLS_SOLVER(BaseSolver):
         # solver
         res = self._solver.solve(self.decomposed_matrix, b)
 
+        if self.preconditioning:
+            # recover original problem
+            A, b, res.vector = remove_preconditioner(self.decomposed_matrix, b, res.vector, D_inv)
+
         # extract the results
         A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)
         residue = np.linalg.norm(A @ x - b)
@@ -190,10 +219,5 @@ class VQLS_SOLVER(BaseSolver):
 
         # register the matrix decomposition of the solver
         self.decomposed_matrix = self._solver.matrix_circuits
-
-        if self.preconditioning:
-            # recover the solution of the original system
-            x = D_inv @ x
-            ref = D_inv @ x
 
         return VQLSResult(x, residue, self._solver.logger, ref)
