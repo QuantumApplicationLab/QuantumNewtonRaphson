@@ -4,8 +4,13 @@ from scipy.sparse import csc_matrix
 from scipy.sparse import sparray
 from vqls_prototype import VQLS
 from .base_solver import BaseSolver
+from .preconditioners import DiagonalScalingPreconditioner
 from .result import VQLSResult
 from .utils import preprocess_data
+
+SUPPORTED_PRECONDITIONERS = {
+    "diagonal_scaling": DiagonalScalingPreconditioner,
+}
 
 
 class VQLS_SOLVER(BaseSolver):
@@ -43,6 +48,13 @@ class VQLS_SOLVER(BaseSolver):
             if "max_evals_grouped" in quantum_solver_options
             else 1
         )
+        self.preconditioner = (
+            quantum_solver_options.pop("preconditioner", None)
+        )
+        # Check if the provided preconditioner is supported
+        if self.preconditioner is not None and self.preconditioner not in SUPPORTED_PRECONDITIONERS:
+            raise ValueError(f"Unsupported preconditioner '{self.preconditioner}'. "
+                             f"Supported preconditioners are: {list(SUPPORTED_PRECONDITIONERS.keys())}")
 
         self.quantum_solver_options = quantum_solver_options
 
@@ -132,8 +144,13 @@ class VQLS_SOLVER(BaseSolver):
         # convert the input data inot a spsparse compatible format
         A, b = preprocess_data(A, b)
 
-        # preprocess the initial matrix
-        A = A.todense()  # <= TO DO: allow for sparse matrix
+        # preconditioning
+        if self.preconditioner:
+            preconditioner = SUPPORTED_PRECONDITIONERS[self.preconditioner](A, b)
+            A, b = preconditioner.apply()
+        else:
+            # preprocess the initial matrix
+            A = A.todense()  # <= TO DO: allow for sparse matrix
 
         # use the input matrix of update the matrix decomposition
         if self.decomposed_matrix is None:
@@ -145,6 +162,10 @@ class VQLS_SOLVER(BaseSolver):
 
         # solver
         res = self._solver.solve(self.decomposed_matrix, b)
+
+        if self.preconditioner:
+            # recover original problem
+            A, b, res.vector = preconditioner.reverse(self.decomposed_matrix, b, res.vector)
 
         # extract the results
         A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)
