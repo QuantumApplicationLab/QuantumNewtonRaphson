@@ -6,8 +6,7 @@ import numpy as np
 from scipy.sparse import sparray
 from scipy.sparse import spmatrix
 
-ValidATypeFormat = Union[np.ndarray, spmatrix, sparray]
-ValidBTypeFormat = ValidATypeFormat
+ValidInputFormat = Union[np.ndarray, spmatrix, sparray]
 
 
 class Preconditioner(ABC):
@@ -20,16 +19,16 @@ class Preconditioner(ABC):
     reversing the preconditioner effect.
 
     Attributes:
-        A (ValidATypeFormat): The coefficient matrix of the linear system.
-        b (ValidBTypeFormat): The right-hand side vector of the linear system.
+        A (ValidInputFormat): The coefficient matrix of the linear system.
+        b (ValidInputFormat): The right-hand side vector of the linear system.
     """
 
-    def __init__(self, A: ValidATypeFormat, b: ValidBTypeFormat):
+    def __init__(self, A: ValidInputFormat, b: ValidInputFormat):
         """Initializes the preconditioner with a matrix A and vector b.
 
         Args:
-            A (ValidATypeFormat): The coefficient matrix of the linear system.
-            b (ValidBTypeFormat): The right-hand side vector of the linear system.
+            A (ValidInputFormat): The coefficient matrix of the linear system.
+            b (ValidInputFormat): The right-hand side vector of the linear system.
         """
         self.A, self.b = A, b
 
@@ -53,7 +52,7 @@ class Preconditioner(ABC):
         b_hat: np.ndarray,
         x_hat: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Transforms a solution vector of the preconditioned system back to the original system.
+        """Transforms the preconditioned system back, including it solution, to the original system.
 
         Args:
             A_hat (np.ndarray): A preconditioned A matrix.
@@ -69,28 +68,44 @@ class Preconditioner(ABC):
 
 
 class DiagonalScalingPreconditioner(Preconditioner):
-    """Implements a diagonal scaling preconditioner for linear systems.
+    r"""Implements a diagonal scaling preconditioner for linear systems.
 
     This preconditioner scales the matrix A and the vector b by the square root
     of the diagonal elements of A, effectively transforming the system into one with a better
     condition number and potentially improving the convergence properties of iterative solvers.
+
+    Starting from the original linear system :math:`A x = b`,
+    we apply a two-sided preconditioner:
+
+    .. math::
+        P^{-1} A P^{-1} (P x) = P^{-1} b,
+
+    where the preconditioner :math:`P` is given by:
+
+    .. math::
+        P = \mathrm{diag}(\sqrt{a_{11}}, \sqrt{a_{22}}, \ldots, \sqrt{a_{nn}}).
+
+    The final preconditioned matrices are :math:`\hat{A} = P^{-1} A P^{-1}`
+    and :math:`\hat{b} = P^{-1} b`.
     """
-    def __init__(self, A: ValidATypeFormat, b: ValidBTypeFormat):
+    def __init__(self, A: ValidInputFormat, b: ValidInputFormat):
         """Initializes the Diagonal Scaling Preconditioner class with a matrix A and vector b.
 
         Args:
-            A (Union[np.ndarray, spmatrix]): The coefficient matrix of the linear system.
-            b (Union[np.ndarray, spmatrix]): The right-hand side vector of the linear system.
+            A (ValidInputFormat): The coefficient matrix of the linear system.
+            b (ValidInputFormat): The right-hand side vector of the linear system.
         """
         super().__init__(A, b)
 
-    def _get_preconditioner(self, A: ValidATypeFormat) -> Tuple[np.ndarray, np.ndarray]:
+        # register the preconditioner and its inverse; to be defined later.
+        self.P = None
+        self.P_inv = None
+
+    def _get_preconditioner(self, A: ValidInputFormat) -> Tuple[np.ndarray, np.ndarray]:
         """Calculates the diagonal scaling preconditioner from A.
 
-        The preconditioner matrix P is defined as P = np.diag(np.sqrt(np.diag(A))).
-
         Args:
-            A (ValidATypeFormat): The original A matrix.
+            A (ValidInputFormat): The original A matrix.
 
         Returns:
             np.ndarray: The preconditioner matrix P
@@ -107,16 +122,11 @@ class DiagonalScalingPreconditioner(Preconditioner):
         return P, P_inv
 
     def apply(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Applies the diagonal scaling preconditioning to the matrix A and vector b.
-
-        From the linear system :  Ax = b
-        We use a two sided preconditioner :  P^{-1} A P^{-1} (Px) = P^{-1} b.
-
-        with P = np.diag(np.sqrt(np.diag(A)))
+        r"""Applies the diagonal scaling preconditioning to the matrix A and vector b.
 
         Returns:
-            np.ndarray: The preconditioned matrix A_hat.
-            np.ndarray: The preconditioned right-hand side vector b_hat.
+            np.ndarray: The preconditioned :math:`\hat{A}` matrix.
+            np.ndarray: The preconditioned right-hand side vector :math:`\hat{b}`.
         """
         # create preconditioner
         self.P, self.P_inv = self._get_preconditioner(self.A)
