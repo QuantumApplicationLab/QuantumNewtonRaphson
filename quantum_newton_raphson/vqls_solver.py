@@ -169,6 +169,7 @@ class VQLS_SOLVER(BaseSolver):
             idx_r = np.argsort(idx)
             A = A[np.ix_(idx_r, idx_r)]
             b = b[idx_r]
+            res.vector = res.vector[idx_r]
 
         # recover original problem
         if self.preconditioner:
