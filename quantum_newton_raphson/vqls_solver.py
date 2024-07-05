@@ -207,7 +207,7 @@ class VQLS_SOLVER(BaseSolver):
 
         if self.preconditioning:
             # recover original problem
-            A, b, res.vector = remove_preconditioner(self.decomposed_matrix, b, res.vector, D_inv)
+            A, b, res.vector = remove_preconditioner(A, b, res.vector, D_inv)
 
         # extract the results
         A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)
