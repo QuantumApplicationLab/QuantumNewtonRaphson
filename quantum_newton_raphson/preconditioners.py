@@ -3,6 +3,8 @@ from abc import abstractmethod
 from typing import Tuple
 from typing import Union
 import numpy as np
+from scipy.sparse import csc_matrix
+from scipy.sparse import diags
 from scipy.sparse import sparray
 from scipy.sparse import spmatrix
 
@@ -30,18 +32,21 @@ class Preconditioner(ABC):
             A (ValidInputFormat): The coefficient matrix of the linear system.
             b (ValidInputFormat): The right-hand side vector of the linear system.
         """
+        if not isinstance(A, (spmatrix, sparray)):
+            A = csc_matrix(A)
+
         self.A, self.b = A, b
 
     @abstractmethod
-    def apply(self) -> Tuple[np.ndarray, np.ndarray]:
+    def apply(self) -> Tuple[ValidInputFormat, ValidInputFormat]:
         """Applies the preconditioning to the matrix A and vector b.
 
         This method should modify the attributes A and b of the instance
         to the preconditioned forms.
 
         Returns:
-            np.ndarray: The preconditioned matrix A.
-            np.ndarray: The preconditioned right-hand side vector b.
+            ValidInputFormat: The preconditioned matrix A.
+            ValidInputFormat: The preconditioned right-hand side vector b.
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
@@ -51,7 +56,7 @@ class Preconditioner(ABC):
         A_hat: np.ndarray,
         b_hat: np.ndarray,
         x_hat: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[ValidInputFormat, ValidInputFormat, ValidInputFormat]:
         """Transforms the preconditioned system back, including it solution, to the original system.
 
         Args:
@@ -60,9 +65,9 @@ class Preconditioner(ABC):
             x_hat (np.ndarray): The solution vector of the preconditioned system.
 
         Returns:
-            np.ndarray: The original A matrix.
-            np.ndarray: The original right-hand side vector.
-            np.ndarray: The solution vector of the original system.
+            ValidInputFormat: The original A matrix.
+            ValidInputFormat: The original right-hand side vector.
+            ValidInputFormat: The solution vector of the original system.
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
@@ -101,23 +106,25 @@ class DiagonalScalingPreconditioner(Preconditioner):
         self.P = None
         self.P_inv = None
 
-    def _get_preconditioner(self, A: ValidInputFormat) -> Tuple[np.ndarray, np.ndarray]:
+    def _get_preconditioner(self, A: ValidInputFormat) -> Tuple[spmatrix, spmatrix]:
         """Calculates the diagonal scaling preconditioner from A.
 
         Args:
-            A (ValidInputFormat): The original A matrix.
+            A (spmatrix): The original sparse matrix A.
 
         Returns:
-            np.ndarray: The preconditioner matrix P
-            np.ndarray: The inverse of P
+            Tuple[spmatrix, spmatrix]: The preconditioner matrix P and its inverse P_inv.
         """
-        if isinstance(self.A, (spmatrix, sparray)):
-            P = np.diag(np.sqrt(np.diag(A.todense())))
-        else:
-            P = np.diag(np.sqrt(np.diag(A)))
+        # extract the diagonal elements of A
+        diag_A = A.diagonal()
+        sqrt_diag_A = np.sqrt(diag_A)
 
-        # calculate inverse of P
-        P_inv = np.diag(1.0 / np.diag(P))
+        # construct the sparse diagonal matrix P
+        P = diags(sqrt_diag_A, format='csc')
+
+        # construct the inverse of the sparse diagonal matrix P
+        sqrt_diag_A_inv = 1.0 / sqrt_diag_A
+        P_inv = diags(sqrt_diag_A_inv, format='csc')
 
         return P, P_inv
 
@@ -131,7 +138,11 @@ class DiagonalScalingPreconditioner(Preconditioner):
         # create preconditioner
         self.P, self.P_inv = self._get_preconditioner(self.A)
 
-        return self.P_inv @ self.A @ self.P_inv, self.P_inv @ self.b
+        # preconditioned matrices
+        A_hat = self.P_inv @ self.A @ self.P_inv
+        b_hat = self.P_inv @ self.b
+
+        return A_hat.todense(), b_hat
 
     def reverse(
         self, A_hat: np.ndarray,
@@ -150,16 +161,24 @@ class DiagonalScalingPreconditioner(Preconditioner):
             np.ndarray: The original right-hand side vector.
             np.ndarray: The solution vector of the original system.
         """
+        # convert vectors to sparse matrices
+        A_hat = csc_matrix(A_hat)
+
         # check if P has already been set
         if self.P is None or self.P_inv is None:
             raise ValueError("Preconditioner P has not been set.")
 
         # ensure shapes are compatible
-        if self.P.shape[1] != A_hat.shape[0]:
+        if self.P.todense().shape[1] != A_hat.todense().shape[0]:
             raise ValueError("Shapes of P and A_hat are not compatible.")
-        if self.P.shape[1] != b_hat.shape[0]:
+        if self.P.todense().shape[1] != b_hat.shape[0]:
             raise ValueError("Shapes of P and b_hat are not compatible.")
-        if self.P_inv.shape[1] != x_hat.shape[0]:
+        if self.P_inv.todense().shape[1] != x_hat.shape[0]:
             raise ValueError("Shapes of P_inv and x_hat are not compatible.")
 
-        return self.P @ A_hat @ self.P, self.P @ b_hat, self.P_inv @ x_hat
+        # convert to original A, b, and x
+        A = self.P @ A_hat @ self.P
+        b = self.P @ b_hat
+        x = self.P_inv @ x_hat
+
+        return A.todense(), b, x
