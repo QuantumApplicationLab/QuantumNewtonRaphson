@@ -1,6 +1,7 @@
 import numpy as np
 from qiskit.primitives import Estimator
 from scipy.sparse import csc_matrix
+from scipy.sparse import linalg as spla
 from scipy.sparse import sparray
 from vqls_prototype import VQLS
 from .base_solver import BaseSolver
@@ -33,28 +34,20 @@ class VQLS_SOLVER(BaseSolver):
             if "sampler" in quantum_solver_options
             else None
         )
-        self.initial_point = (
-            quantum_solver_options.pop("initial_point")
-            if "initial_point" in quantum_solver_options
-            else None
-        )
-        self.gradient = (
-            quantum_solver_options.pop("gradient")
-            if "gradient" in quantum_solver_options
-            else None
-        )
-        self.max_evals_grouped = (
-            quantum_solver_options.pop("max_evals_grouped")
-            if "max_evals_grouped" in quantum_solver_options
-            else 1
-        )
-        self.preconditioner = (
-            quantum_solver_options.pop("preconditioner", None)
-        )
+        self.initial_point = quantum_solver_options.pop("initial_point", None)
+        self.gradient = quantum_solver_options.pop("gradient", None)
+        self.max_evals_grouped = quantum_solver_options.pop("max_evals_grouped", 1)
+        self.reorder = quantum_solver_options.pop("reorder", False)
+        self.preconditioner = quantum_solver_options.pop("preconditioner", None)
         # Check if the provided preconditioner is supported
-        if self.preconditioner is not None and self.preconditioner not in SUPPORTED_PRECONDITIONERS:
-            raise ValueError(f"Unsupported preconditioner '{self.preconditioner}'. "
-                             f"Supported preconditioners are: {list(SUPPORTED_PRECONDITIONERS.keys())}")
+        if (
+            self.preconditioner is not None
+            and self.preconditioner not in SUPPORTED_PRECONDITIONERS
+        ):
+            raise ValueError(
+                f"Unsupported preconditioner '{self.preconditioner}'. "
+                f"Supported preconditioners are: {list(SUPPORTED_PRECONDITIONERS.keys())}"
+            )
 
         self.quantum_solver_options = quantum_solver_options
 
@@ -152,6 +145,13 @@ class VQLS_SOLVER(BaseSolver):
             # preprocess the initial matrix
             A = A.todense()  # <= TO DO: allow for sparse matrix
 
+        # reorder the matrix elements to limit the number of Pauli gates
+        if self.reorder:
+            lu = spla.splu(csc_matrix(A), permc_spec="COLAMD")
+            idx = lu.perm_c
+            A = A[np.ix_(idx, idx)]
+            b = b[idx]
+
         # use the input matrix of update the matrix decomposition
         if self.decomposed_matrix is None:
             # set it to the input matrix at the first call
@@ -162,6 +162,12 @@ class VQLS_SOLVER(BaseSolver):
 
         # solver
         res = self._solver.solve(self.decomposed_matrix, b)
+
+        # recover the original order
+        if self.reorder:
+            idx_r = np.argsort(idx)
+            A = A[np.ix_(idx_r, idx_r)]
+            b = b[idx_r]
 
         # recover original problem
         if self.preconditioner:
