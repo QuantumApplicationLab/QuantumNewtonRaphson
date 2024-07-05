@@ -163,9 +163,9 @@ class VQLS_SOLVER(BaseSolver):
         # solver
         res = self._solver.solve(self.decomposed_matrix, b)
 
+        # recover original problem
         if self.preconditioner:
-            # recover original problem
-            A, b, res.vector = preconditioner.reverse(self.decomposed_matrix, b, res.vector)
+            A, b, res.vector = preconditioner.reverse(A, b, res.vector)
 
         # extract the results
         A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)

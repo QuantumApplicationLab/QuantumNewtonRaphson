@@ -150,4 +150,16 @@ class DiagonalScalingPreconditioner(Preconditioner):
             np.ndarray: The original right-hand side vector.
             np.ndarray: The solution vector of the original system.
         """
+        # check if P has already been set
+        if self.P is None or self.P_inv is None:
+            raise ValueError("Preconditioner P has not been set.")
+
+        # ensure shapes are compatible
+        if self.P.shape[1] != A_hat.shape[0]:
+            raise ValueError("Shapes of P and A_hat are not compatible.")
+        if self.P.shape[1] != b_hat.shape[0]:
+            raise ValueError("Shapes of P and b_hat are not compatible.")
+        if self.P_inv.shape[1] != x_hat.shape[0]:
+            raise ValueError("Shapes of P_inv and x_hat are not compatible.")
+
         return self.P @ A_hat @ self.P, self.P @ b_hat, self.P_inv @ x_hat
