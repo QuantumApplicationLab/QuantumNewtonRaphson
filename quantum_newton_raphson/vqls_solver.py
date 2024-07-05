@@ -39,6 +39,7 @@ class VQLS_SOLVER(BaseSolver):
         self.max_evals_grouped = quantum_solver_options.pop("max_evals_grouped", 1)
         self.reorder = quantum_solver_options.pop("reorder", False)
         self.preconditioner = quantum_solver_options.pop("preconditioner", None)
+
         # Check if the provided preconditioner is supported
         if (
             self.preconditioner is not None
