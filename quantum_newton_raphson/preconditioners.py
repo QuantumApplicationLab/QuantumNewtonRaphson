@@ -122,8 +122,11 @@ class DiagonalScalingPreconditioner(Preconditioner):
         # construct the sparse diagonal matrix P
         P = diags(sqrt_diag_A, format='csc')
 
+        # small value to avoid division by zero
+        epsilon = 1e-10
+
         # construct the inverse of the sparse diagonal matrix P
-        sqrt_diag_A_inv = 1.0 / sqrt_diag_A
+        sqrt_diag_A_inv = 1.0 / (sqrt_diag_A + epsilon)
         P_inv = diags(sqrt_diag_A_inv, format='csc')
 
         return P, P_inv
