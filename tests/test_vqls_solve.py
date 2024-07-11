@@ -27,7 +27,7 @@ size = 4
 @pytest.mark.parametrize("b", [np.random.rand(size)])
 @pytest.mark.parametrize(
     "options",
-    [{"estimator": Estimator(), "ansatz": RealAmplitudes(2), "optimizer": COBYLA()}],
+    [{"estimator": Estimator(), "ansatz": RealAmplitudes(2), "optimizer": COBYLA(), "preconditioner": "diagonal_scaling", "reorder": True}],
 )
 def test_vqls_solve_default(A, b, options):
     """Test the vqls solver."""
