@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List
 import numpy as np
 from scipy.sparse.linalg import SuperLU
+from vqls_prototype.solver import VQLSLog
 
 
 @dataclass
@@ -28,9 +29,9 @@ class VQLSResult:
     """Result of the VQLS."""
 
     solution: np.ndarray
-    # n_iter: int
-    # error: float
-    # cost_function: np.ndarray
+    residue: float
+    logger: VQLSLog
+    ref: np.ndarray
 
 
 @dataclass
@@ -38,6 +39,7 @@ class QUBOResult:
     """Result of the QUBO linear solver."""
 
     solution: np.ndarray
+<<<<<<< HEAD
     # n_iter: int
     # error: float
     # cost_function: np.ndarray
@@ -47,3 +49,5 @@ class HHLResult:
     """Result of the HHL linear solver."""
 
     solution: np.ndarray
+=======
+>>>>>>> main
