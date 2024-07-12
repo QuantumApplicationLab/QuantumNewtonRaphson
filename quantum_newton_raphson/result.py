@@ -39,15 +39,13 @@ class QUBOResult:
     """Result of the QUBO linear solver."""
 
     solution: np.ndarray
-<<<<<<< HEAD
     # n_iter: int
     # error: float
     # cost_function: np.ndarray
+
 
 @dataclass
 class HHLResult:
     """Result of the HHL linear solver."""
 
     solution: np.ndarray
-=======
->>>>>>> main
