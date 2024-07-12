@@ -25,6 +25,7 @@ class HHL_SOLVER(BaseSolver):
 
         # extract optional options for the hhl solver
         self.sampler = quantum_solver_options.pop("sampler", None)
+        self.preconditioner = quantum_solver_options.pop("preconditioner", None)
 
         # Check if the provided preconditioner is supported
         if (
@@ -97,7 +98,7 @@ class HHL_SOLVER(BaseSolver):
 
         # recover original problem
         if self.preconditioner:
-            A, b, res.vector = preconditioner.reverse(A, b, res.vector)
+            A, b, res.vector = preconditioner.reverse(A, b, res.solution)
 
         # extract the results
-        return HHLResult(post_process_hhl_solution(A, b, res.vector))
+        return HHLResult(post_process_hhl_solution(A, b, res.solution))
