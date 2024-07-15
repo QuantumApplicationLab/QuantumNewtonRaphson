@@ -53,7 +53,7 @@ class VQLS_SOLVER(BaseSolver):
         self.quantum_solver_options = quantum_solver_options
 
         self._solver = VQLS(
-            Estimator(),  # bugs when the estimator is not reset ...
+            self.estimator,
             self.ansatz,
             self.optimizer,
             sampler=self.sampler,
