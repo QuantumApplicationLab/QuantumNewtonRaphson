@@ -1,5 +1,4 @@
 import numpy as np
-from qiskit.primitives import Estimator
 from scipy.sparse import csc_matrix
 from scipy.sparse import linalg as spla
 from scipy.sparse import sparray
