@@ -28,7 +28,7 @@ dependencies = [
     "qubols@git+https://github.com/QuantumApplicationLab/qubols",
     "qreorder@git+https://github.com/QuantumApplicationLab/qreorder",
     "vqls_prototype@git+https://github.com/QuantumApplicationLab/vqls-prototype",
-    "hhl_prototype@git+https://github.com/QuantumApplicationLab/hhl-prototype@koen-leijnse-patch-1",
+    "hhl_prototype@git+https://github.com/QuantumApplicationLab/hhl-prototype",
 ]
 description = "Quantum version of Newton-Raphson algorithm"
 keywords = ["optimization", "quantum"]
