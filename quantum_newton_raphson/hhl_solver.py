@@ -43,7 +43,7 @@ class HHL_SOLVER(BaseSolver):
         self._solver = HHL(
             self.estimator,
             sampler=self.sampler,
-            options=quantum_solver_options,
+            # options=quantum_solver_options,
         )
 
     def __call__(self, A: sparray, b: np.ndarray) -> HHLResult:
