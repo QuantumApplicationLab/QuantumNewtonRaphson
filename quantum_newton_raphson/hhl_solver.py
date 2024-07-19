@@ -37,14 +37,12 @@ class HHL_SOLVER(BaseSolver):
                 f"Supported preconditioners are: {list(SUPPORTED_PRECONDITIONERS.keys())}"
             )
 
-        self.quantum_solver_options = quantum_solver_options
+        # precision
+        default_epsilon = 1e-2
+        self.epsilon = quantum_solver_options.pop("epsilon", default_epsilon)
 
         # solver
-        self._solver = HHL(
-            self.estimator,
-            sampler=self.sampler,
-            # options=quantum_solver_options,
-        )
+        self._solver = HHL(self.estimator, sampler=self.sampler, epsilon=self.epsilon)
 
     def __call__(self, A: sparray, b: np.ndarray) -> HHLResult:
         """Solve the linear system using HHL.
