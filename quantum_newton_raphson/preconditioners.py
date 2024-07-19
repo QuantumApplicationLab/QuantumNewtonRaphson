@@ -52,10 +52,7 @@ class Preconditioner(ABC):
 
     @abstractmethod
     def reverse(
-        self,
-        A_hat: np.ndarray,
-        b_hat: np.ndarray,
-        x_hat: np.ndarray
+        self, A_hat: np.ndarray, b_hat: np.ndarray, x_hat: np.ndarray
     ) -> Tuple[ValidInputFormat, ValidInputFormat, ValidInputFormat]:
         """Transforms the preconditioned system back, including it solution, to the original system.
 
@@ -93,6 +90,7 @@ class DiagonalScalingPreconditioner(Preconditioner):
     The final preconditioned matrices are :math:`\hat{A} = P^{-1} A P^{-1}`
     and :math:`\hat{b} = P^{-1} b`.
     """
+
     def __init__(self, A: ValidInputFormat, b: ValidInputFormat):
         """Initializes the Diagonal Scaling Preconditioner class with a matrix A and vector b.
 
@@ -120,14 +118,14 @@ class DiagonalScalingPreconditioner(Preconditioner):
         sqrt_diag_A = np.sqrt(diag_A)
 
         # construct the sparse diagonal matrix P
-        P = diags(sqrt_diag_A, format='csc')
+        P = diags(sqrt_diag_A, format="csc")
 
         # small value to avoid division by zero
         epsilon = 1e-10
 
         # construct the inverse of the sparse diagonal matrix P
         sqrt_diag_A_inv = 1.0 / (sqrt_diag_A + epsilon)
-        P_inv = diags(sqrt_diag_A_inv, format='csc')
+        P_inv = diags(sqrt_diag_A_inv, format="csc")
 
         return P, P_inv
 
@@ -148,9 +146,7 @@ class DiagonalScalingPreconditioner(Preconditioner):
         return A_hat.todense(), b_hat
 
     def reverse(
-        self, A_hat: np.ndarray,
-        b_hat: np.ndarray,
-        x_hat: np.ndarray
+        self, A_hat: np.ndarray, b_hat: np.ndarray, x_hat: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Transforms a solution vector of the preconditioned system back to the original system.
 
