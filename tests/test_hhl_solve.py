@@ -5,7 +5,7 @@ import pytest
 from qiskit.primitives import Estimator
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
-from quantum_newton_raphson.hhl_solver import hhlsolve
+from quantum_newton_raphson.hhl_solver import HHL_SOLVER
 
 
 def create_random_matrix(size: int) -> sparray:
@@ -29,6 +29,6 @@ size = 4
 )
 def test_hhl_solve_default(A, b, options):
     """Test the hhl solver."""
-    results = hhlsolve(A, b, options)
+    results = HHL_SOLVER(A, b, options)
     if np.linalg.norm(A.dot(results.solution) - b) > 0.1:
         pytest.skip("HHL solution innacurate")
