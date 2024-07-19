@@ -16,7 +16,7 @@ def create_random_matrix(size: int) -> sparray:
     Args:
         size (int): size of the matrix
     """
-    mat = sprand(size, size, density=0.85, format="csc")
+    mat = sprand(size, size, density=1.0, format="csc")
     return mat + mat.T
 
 
