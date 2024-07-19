@@ -2,7 +2,8 @@
 
 import numpy as np
 import pytest
-from qiskit.primitives import Estimator, Sampler
+from qiskit.primitives import Estimator
+from qiskit.primitives import Sampler
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
 from quantum_newton_raphson.hhl_solver import HHL_SOLVER
