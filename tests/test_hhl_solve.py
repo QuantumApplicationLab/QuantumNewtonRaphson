@@ -2,12 +2,11 @@
 
 import numpy as np
 import pytest
-from qiskit.circuit.library import RealAmplitudes
 from qiskit.primitives import Estimator
-from qiskit_algorithms.optimizers import COBYLA
+from qiskit.primitives import Sampler
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
-from quantum_newton_raphson.vqls_solver import VQLS_SOLVER
+from quantum_newton_raphson.hhl_solver import HHL_SOLVER
 
 
 def create_random_matrix(size: int) -> sparray:
@@ -16,7 +15,7 @@ def create_random_matrix(size: int) -> sparray:
     Args:
         size (int): size of the matrix
     """
-    mat = sprand(size, size, density=1.0, format="csc")
+    mat = sprand(size, size, density=0.85, format="csc")
     return mat + mat.T
 
 
@@ -27,19 +26,11 @@ size = 4
 @pytest.mark.parametrize("b", [np.random.rand(size)])
 @pytest.mark.parametrize(
     "options",
-    [
-        {
-            "estimator": Estimator(),
-            "ansatz": RealAmplitudes(2),
-            "optimizer": COBYLA(),
-            "preconditioner": "diagonal_scaling",
-            "reorder": True,
-        }
-    ],
+    [{"estimator": Estimator()}],
 )
-def test_vqls_solve_default(A, b, options):
-    """Test the vqls solver."""
-    solver = VQLS_SOLVER(**options)
+def test_hhl_solve_default(A, b, options):
+    """Test the hhl solver."""
+    solver = HHL_SOLVER(estimator=Estimator(), sampler=Sampler())
     results = solver(A, b)
     if np.linalg.norm(A.dot(results.solution) - b) > 0.1:
-        pytest.skip("VQLS solution innacurate")
+        pytest.skip("HHL solution innacurate")
