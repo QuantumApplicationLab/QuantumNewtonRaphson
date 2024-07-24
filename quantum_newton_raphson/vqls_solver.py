@@ -1,5 +1,4 @@
 import numpy as np
-from qiskit.primitives import Estimator
 from scipy.sparse import csc_matrix
 from scipy.sparse import linalg as spla
 from scipy.sparse import sparray
@@ -53,7 +52,7 @@ class VQLS_SOLVER(BaseSolver):
         self.quantum_solver_options = quantum_solver_options
 
         self._solver = VQLS(
-            Estimator(),  # bugs when the estimator is not reset ...
+            self.estimator,
             self.ansatz,
             self.optimizer,
             sampler=self.sampler,

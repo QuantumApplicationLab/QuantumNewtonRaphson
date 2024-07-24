@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from qiskit.circuit.library import RealAmplitudes
 from qiskit.primitives import Estimator
+from qiskit_aer.primitives import EstimatorV2 as aer_EstimatorV2
 from qiskit_algorithms.optimizers import COBYLA
 from scipy.sparse import random as sprand
 from scipy.sparse import sparray
@@ -34,7 +35,12 @@ size = 4
             "optimizer": COBYLA(),
             "preconditioner": "diagonal_scaling",
             "reorder": True,
-        }
+        },
+        {
+            "estimator": aer_EstimatorV2(),
+            "ansatz": RealAmplitudes(2),
+            "optimizer": COBYLA(),
+        },
     ],
 )
 def test_vqls_solve_default(A, b, options):
