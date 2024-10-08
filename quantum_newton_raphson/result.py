@@ -49,3 +49,5 @@ class HHLResult:
     """Result of the HHL linear solver."""
 
     solution: np.ndarray
+    residue: float
+    ref: np.array

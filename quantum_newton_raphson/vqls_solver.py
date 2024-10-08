@@ -7,7 +7,9 @@ from vqls_prototype import VQLS
 from .base_solver import BaseSolver
 from .preconditioners import DiagonalScalingPreconditioner
 from .result import VQLSResult
+from .utils import pad_input
 from .utils import preprocess_data
+from .utils import post_process_solution
 
 SUPPORTED_PRECONDITIONERS = {
     "diagonal_scaling": DiagonalScalingPreconditioner,
@@ -75,63 +77,6 @@ class VQLS_SOLVER(BaseSolver):
             b (np.ndarray): righ habd side vector
             quantum_solver_options (Dict): options for the solver
         """
-
-        def pad_input(A, y):
-            """Process the input data to pad to power of two size.
-
-            Args:
-                A (sparray): matrix of the linear system
-                y (np.ndarray): rhs of the linear system
-            """
-            input_size = A.shape[0]
-            if np.log2(input_size).is_integer():
-                return A, y, input_size
-            else:
-                # new size
-                new_size = 2 ** int(np.ceil(np.log2(input_size)))
-
-                # pad matrix
-                Afull = np.eye(new_size)
-                Afull[:input_size, :input_size] = A.todense()
-
-                # convert pad matrix into a sparse matrix
-                Afull = csc_matrix(Afull)
-
-                # pad vector
-                yfull = np.zeros(new_size)
-                yfull[:input_size] = y
-                return Afull, yfull, input_size
-
-        def post_process_vqls_solution(A, y, x, original_input_size):
-            """Retreive the  norm and direction of the solution vector.
-
-            VQLS provides a normalized form of the solution vector
-            that can also have a -1 prefactor. This routine retrieves
-            the un-normalized solution vector with the correct prefactor.
-
-            Args:
-                A (np.ndarray): matrix of the linear system
-                y (np.ndarray): rhs of the linear system
-                x (np.ndarray): proposed solution
-                original_input_size (int): size of the original vector
-            """
-            # unpad the data
-            A = A[:original_input_size, :original_input_size]
-            x = x[:original_input_size]
-            y = y[:original_input_size]
-
-            # compute the prefactor
-            Ax = A @ x
-            normy = np.linalg.norm(y)
-            normAx = np.linalg.norm(Ax)
-            prefac = normy / normAx
-
-            # possible flip sign
-            if np.dot(Ax * prefac, y) < 0:
-                prefac *= -1
-            sol = prefac * x
-            return A, y, sol
-
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
 
@@ -176,7 +121,7 @@ class VQLS_SOLVER(BaseSolver):
             A, b, res.vector = preconditioner.reverse(A, b, res.vector)
 
         # extract the results
-        A, b, x = post_process_vqls_solution(A, b, res.vector, original_input_size)
+        A, b, x = post_process_solution(A, b, res.vector, original_input_size)
         residue = np.linalg.norm(A @ x - b)
 
         # classical check

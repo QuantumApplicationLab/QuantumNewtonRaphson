@@ -79,3 +79,66 @@ def preprocess_data(
         b = np.asarray(b)
 
     return A, b
+
+
+def pad_input(A: ValidInputFormat, y: ValidInputFormat) -> Tuple[sparray, sparray, int]:
+    """Process the input data to pad to power of two size.
+
+    Args:
+        A (sparray): matrix of the linear system
+        y (np.ndarray): rhs of the linear system
+    """
+    input_size = A.shape[0]
+    if np.log2(input_size).is_integer():
+        return A, y, input_size
+    else:
+        # new size
+        new_size = 2 ** int(np.ceil(np.log2(input_size)))
+
+        # pad matrix
+        Afull = np.eye(new_size)
+        Afull[:input_size, :input_size] = A.todense()
+
+        # convert pad matrix into a sparse matrix
+        Afull = csc_matrix(Afull)
+
+        # pad vector
+        yfull = np.zeros(new_size)
+        yfull[:input_size] = y
+        return Afull, yfull, input_size
+
+
+def post_process_solution(
+    A: ValidInputFormat,
+    y: ValidInputFormat,
+    x: ValidInputFormat,
+    original_input_size: int,
+) -> Tuple[ValidInputFormat, ValidInputFormat, ValidInputFormat]:
+    """Retreive the  norm and direction of the solution vector.
+
+    VQLS provides a normalized form of the solution vector
+    that can also have a -1 prefactor. This routine retrieves
+    the un-normalized solution vector with the correct prefactor.
+
+    Args:
+        A (np.ndarray): matrix of the linear system
+        y (np.ndarray): rhs of the linear system
+        x (np.ndarray): proposed solution
+        original_input_size (int): size of the original vector
+    """
+    # unpad the data
+    A = A[:original_input_size, :original_input_size]
+    x = x[:original_input_size]
+    y = y[:original_input_size]
+
+    # compute the prefactor
+    Ax = A @ x
+    normy = np.linalg.norm(y)
+    normAx = np.linalg.norm(Ax)
+    prefac = normy / normAx
+
+    # possible flip sign
+    if np.dot(Ax * prefac, y) < 0:
+        prefac *= -1
+    sol = prefac * x
+    return A, y, sol
