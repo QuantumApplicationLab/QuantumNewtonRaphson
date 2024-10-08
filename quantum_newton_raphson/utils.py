@@ -97,7 +97,10 @@ def pad_input(A: ValidInputFormat, y: ValidInputFormat) -> Tuple[sparray, sparra
 
         # pad matrix
         Afull = np.eye(new_size)
-        Afull[:input_size, :input_size] = A.todense()
+        if isinstance(A, np.ndarray):
+            Afull[:input_size, :input_size] = A
+        else:
+            Afull[:input_size, :input_size] = A.todense()
 
         # convert pad matrix into a sparse matrix
         Afull = csc_matrix(Afull)

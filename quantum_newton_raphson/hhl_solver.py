@@ -51,7 +51,7 @@ class HHL_SOLVER(BaseSolver):
 
         Args:
             A (sparray): matrix of the linear syste
-            b (np.ndarray): righ habd side vector
+            b (np.ndarray): right hand side vector
         """
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
@@ -72,10 +72,12 @@ class HHL_SOLVER(BaseSolver):
 
         # recover original problem
         if self.preconditioner:
-            A, b, res.vector = preconditioner.reverse(A, b, res.solution)
+            A, b, x = preconditioner.reverse(A, b, res.solution)
+        else:
+            x = res.solution
 
         # extract the results
-        A, b, x = post_process_solution(A, b, res.vector, original_input_size)
+        A, b, x = post_process_solution(A, b, x, original_input_size)
         residue = np.linalg.norm(A @ x - b)
 
         # classical check
