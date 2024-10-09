@@ -8,8 +8,8 @@ from .base_solver import BaseSolver
 from .preconditioners import DiagonalScalingPreconditioner
 from .result import VQLSResult
 from .utils import pad_input
-from .utils import preprocess_data
 from .utils import post_process_solution
+from .utils import preprocess_data
 
 SUPPORTED_PRECONDITIONERS = {
     "diagonal_scaling": DiagonalScalingPreconditioner,
