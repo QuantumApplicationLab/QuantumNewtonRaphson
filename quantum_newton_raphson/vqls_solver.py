@@ -69,13 +69,15 @@ class VQLS_SOLVER(BaseSolver):
         # update it instead of recalculating the decomposition
         self.decomposed_matrix = None
 
-    def __call__(self, A: sparray, b: np.ndarray) -> VQLSResult:
+    def __call__(
+        self, A: sparray, b: np.ndarray, compute_classical_solution: bool = False
+    ) -> VQLSResult:
         """Solve the linear system using VQLS.
 
         Args:
             A (sparray): matrix of the linear syste
             b (np.ndarray): righ habd side vector
-            quantum_solver_options (Dict): options for the solver
+            compute_classical_solution (bool): flag to compute the classical solution
         """
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
@@ -125,7 +127,10 @@ class VQLS_SOLVER(BaseSolver):
         residue = np.linalg.norm(A @ x - b)
 
         # classical check
-        ref = np.linalg.solve(A, b)  # <= of course we need to remove that at some point
+        if compute_classical_solution:
+            ref = np.linalg.solve(A, b)
+        else:
+            ref = np.zeros(original_input_size)
 
         # register the matrix decomposition of the solver
         self.decomposed_matrix = self._solver.matrix_circuits

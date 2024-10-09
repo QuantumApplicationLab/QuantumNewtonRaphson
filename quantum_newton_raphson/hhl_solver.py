@@ -46,12 +46,15 @@ class HHL_SOLVER(BaseSolver):
         # solver
         self._solver = HHL(self.estimator, sampler=self.sampler, epsilon=self.epsilon)
 
-    def __call__(self, A: sparray, b: np.ndarray) -> HHLResult:
+    def __call__(
+        self, A: sparray, b: np.ndarray, compute_classical_solution: bool = False
+    ) -> HHLResult:
         """Solve the linear system using HHL.
 
         Args:
             A (sparray): matrix of the linear syste
             b (np.ndarray): right hand side vector
+            compute_classical_solution (bool): flag to compute the classical solution
         """
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
@@ -81,7 +84,10 @@ class HHL_SOLVER(BaseSolver):
         residue = np.linalg.norm(A @ x - b)
 
         # classical check
-        ref = np.linalg.solve(A, b)  # <= of course we need to remove that at some point
+        if compute_classical_solution:
+            ref = np.linalg.solve(A, b)
+        else:
+            ref = np.zeros(original_input_size)
 
         # extract the results
         return HHLResult(x, residue, ref)
