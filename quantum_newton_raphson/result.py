@@ -39,6 +39,8 @@ class QUBOResult:
     """Result of the QUBO linear solver."""
 
     solution: np.ndarray
+    residue: float
+    ref: np.array
     # n_iter: int
     # error: float
     # cost_function: np.ndarray

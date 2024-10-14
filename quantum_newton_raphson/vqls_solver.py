@@ -42,6 +42,11 @@ class VQLS_SOLVER(BaseSolver):
         self.reorder = quantum_solver_options.pop("reorder", False)
         self.preconditioner = quantum_solver_options.pop("preconditioner", None)
 
+        # compute the classical solution
+        self.compute_classical_solution = quantum_solver_options.pop(
+            "compute_classical_solution", False
+        )
+
         # Check if the provided preconditioner is supported
         if (
             self.preconditioner is not None
@@ -69,15 +74,12 @@ class VQLS_SOLVER(BaseSolver):
         # update it instead of recalculating the decomposition
         self.decomposed_matrix = None
 
-    def __call__(
-        self, A: sparray, b: np.ndarray, compute_classical_solution: bool = False
-    ) -> VQLSResult:
+    def __call__(self, A: sparray, b: np.ndarray) -> VQLSResult:
         """Solve the linear system using VQLS.
 
         Args:
             A (sparray): matrix of the linear syste
             b (np.ndarray): righ habd side vector
-            compute_classical_solution (bool): flag to compute the classical solution
         """
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
@@ -127,7 +129,7 @@ class VQLS_SOLVER(BaseSolver):
         residue = np.linalg.norm(A @ x - b)
 
         # classical check
-        if compute_classical_solution:
+        if self.compute_classical_solution:
             ref = np.linalg.solve(A, b)
         else:
             ref = np.zeros(original_input_size)

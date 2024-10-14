@@ -29,6 +29,11 @@ class HHL_SOLVER(BaseSolver):
         self.sampler = quantum_solver_options.pop("sampler", None)
         self.preconditioner = quantum_solver_options.pop("preconditioner", None)
 
+        # compute the classical solution
+        self.compute_classical_solution = quantum_solver_options.pop(
+            "compute_classical_solution", False
+        )
+
         # Check if the provided preconditioner is supported
         if (
             self.preconditioner is not None
@@ -46,15 +51,12 @@ class HHL_SOLVER(BaseSolver):
         # solver
         self._solver = HHL(self.estimator, sampler=self.sampler, epsilon=self.epsilon)
 
-    def __call__(
-        self, A: sparray, b: np.ndarray, compute_classical_solution: bool = False
-    ) -> HHLResult:
+    def __call__(self, A: sparray, b: np.ndarray) -> HHLResult:
         """Solve the linear system using HHL.
 
         Args:
             A (sparray): matrix of the linear syste
             b (np.ndarray): right hand side vector
-            compute_classical_solution (bool): flag to compute the classical solution
         """
         # pad the input data if necessary
         A, b, original_input_size = pad_input(A, b)
@@ -84,7 +86,7 @@ class HHL_SOLVER(BaseSolver):
         residue = np.linalg.norm(A @ x - b)
 
         # classical check
-        if compute_classical_solution:
+        if self.compute_classical_solution:
             ref = np.linalg.solve(A, b)
         else:
             ref = np.zeros(original_input_size)
