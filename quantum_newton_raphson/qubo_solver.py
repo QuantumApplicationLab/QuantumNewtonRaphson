@@ -16,6 +16,11 @@ class QUBO_SOLVER(BaseSolver):
         """Init the solver and options."""
         self.options = options
 
+        # compute the classical solution
+        self.compute_classical_solution = options.pop(
+            "compute_classical_solution", False
+        )
+
         # preprocess options
         if "encoding" not in self.options:
             self.options["encoding"] = RangedEfficientEncoding
@@ -70,9 +75,18 @@ class QUBO_SOLVER(BaseSolver):
         # solve
         sol = self._solver.solve(A, b)
 
+        # postporcess solution
         if self.normalise_rhs:
-            # postporcess solution
             b = original_b
             sol *= norm_b
 
-        return QUBOResult(sol)
+        # compute the residue
+        residue = np.linalg.norm(A @ sol - b)
+
+        # classical check
+        if self.compute_classical_solution:
+            ref = np.linalg.solve(A, b)
+        else:
+            ref = np.zeros_like(b)
+
+        return QUBOResult(sol, residue, ref)

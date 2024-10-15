@@ -4,6 +4,8 @@ from scipy.sparse import sparray
 from .base_solver import BaseSolver
 from .preconditioners import DiagonalScalingPreconditioner
 from .result import HHLResult
+from .utils import pad_input
+from .utils import post_process_solution
 from .utils import preprocess_data
 
 SUPPORTED_PRECONDITIONERS = {
@@ -27,6 +29,11 @@ class HHL_SOLVER(BaseSolver):
         self.sampler = quantum_solver_options.pop("sampler", None)
         self.preconditioner = quantum_solver_options.pop("preconditioner", None)
 
+        # compute the classical solution
+        self.compute_classical_solution = quantum_solver_options.pop(
+            "compute_classical_solution", False
+        )
+
         # Check if the provided preconditioner is supported
         if (
             self.preconditioner is not None
@@ -49,31 +56,10 @@ class HHL_SOLVER(BaseSolver):
 
         Args:
             A (sparray): matrix of the linear syste
-            b (np.ndarray): righ habd side vector
-            quantum_solver_options (Dict): options for the solver
+            b (np.ndarray): right hand side vector
         """
-
-        def post_process_hhl_solution(A, y, x):
-            """Retreive the  norm and direction of the solution vector.
-
-            VQLS provides a normalized form of the solution vector
-            that can also have a -1 prefactor. This routine retrieves
-            the un-normalized solution vector with the correct prefactor.
-
-            Args:
-                A (np.ndarray): matrix of the linear system
-                y (np.ndarray): rhs of the linear system
-                x (np.ndarray): proposed solution
-            """
-            Ax = A @ x
-            normy = np.linalg.norm(y)
-            normAx = np.linalg.norm(Ax)
-            prefac = normy / normAx
-
-            if np.dot(Ax * prefac, y) < 0:
-                prefac *= -1
-            sol = prefac * x
-            return sol
+        # pad the input data if necessary
+        A, b, original_input_size = pad_input(A, b)
 
         # convert the input data into a sparse compatible format
         A, b = preprocess_data(A, b)
@@ -86,17 +72,24 @@ class HHL_SOLVER(BaseSolver):
             # preprocess the initial matrix
             A = A.todense()  # <= TO DO: allow for sparse matrix
 
-        # preprocess the b vector
-        norm_b = np.linalg.norm(b)
-        bnorm = np.copy(b)
-        bnorm /= norm_b
-
         # solver
         res = self._solver.solve(A, b)
 
         # recover original problem
         if self.preconditioner:
-            A, b, res.vector = preconditioner.reverse(A, b, res.solution)
+            A, b, x = preconditioner.reverse(A, b, res.solution)
+        else:
+            x = res.solution
 
         # extract the results
-        return HHLResult(post_process_hhl_solution(A, b, res.solution))
+        A, b, x = post_process_solution(A, b, x, original_input_size)
+        residue = np.linalg.norm(A @ x - b)
+
+        # classical check
+        if self.compute_classical_solution:
+            ref = np.linalg.solve(A, b)
+        else:
+            ref = np.zeros(original_input_size)
+
+        # extract the results
+        return HHLResult(x, residue, ref)
