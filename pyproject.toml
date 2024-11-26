@@ -28,6 +28,7 @@ dependencies = [
     "qubols@git+https://github.com/QuantumApplicationLab/qubols",
     "vqls_prototype@git+https://github.com/QuantumApplicationLab/vqls-prototype",
     "hhl_prototype@git+https://github.com/QuantumApplicationLab/hhl-prototype",
+    "qreorder@git+https://github.com/QuantumApplicationLab/qreorder",
 ]
 description = "Quantum version of Newton-Raphson algorithm"
 keywords = ["optimization", "quantum"]
@@ -51,9 +52,6 @@ dev = [
     "tox",
     "myst_parser",
 ]
-qreorder = [
-    "qreorder@git+https://github.com/QuantumApplicationLab/qreorder",
-] #incorporate in dependencies when qreorder is public
 publishing = ["build", "twine", "wheel"]
 
 [project.urls]
