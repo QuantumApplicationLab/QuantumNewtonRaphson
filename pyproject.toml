@@ -26,7 +26,6 @@ dependencies = [
     "numpy",
     "scipy",
     "qubols@git+https://github.com/QuantumApplicationLab/qubols",
-    "qreorder@git+https://github.com/QuantumApplicationLab/qreorder",
     "vqls_prototype@git+https://github.com/QuantumApplicationLab/vqls-prototype",
     "hhl_prototype@git+https://github.com/QuantumApplicationLab/hhl-prototype",
 ]
@@ -52,6 +51,9 @@ dev = [
     "tox",
     "myst_parser",
 ]
+qreorder = [
+    "qreorder@git+https://github.com/QuantumApplicationLab/qreorder",
+] #incorporate in dependencies when qreorder is public
 publishing = ["build", "twine", "wheel"]
 
 [project.urls]
