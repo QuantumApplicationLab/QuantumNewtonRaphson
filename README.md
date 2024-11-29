@@ -1,6 +1,9 @@
 [![github repo badge](https://img.shields.io/badge/github-repo-000.svg?logo=github&labelColor=gray&color=blue)](https://github.com/QuantumApplicationLab/quantumnewtonraphson) 
 [![github license badge](https://img.shields.io/github/license/QuantumApplicationLab/quantumnewtonraphson)](https://github.com/QuantumApplicationLab/quantumnewtonraphson)
-![build](https://github.com/QuantumApplicationLab/quantumnewtonraphson/actions/workflows/build.yml/badge.svg)
+[![Python](https://img.shields.io/badge/Python-3.8-informational)](https://www.python.org/)
+[![Code style: Black](https://img.shields.io/badge/Code%20style-Black-000.svg)](https://github.com/psf/black)
+[![Tests](https://github.com/quantumapplicationlab/qubols/actions/workflows/build.yml/badge.svg)](https://github.com/quantumapplicationlab/qubols/actions/workflows/build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/QuantumApplicationLab/qubols/badge.svg?branch=master)](https://coveralls.io/github/QuantumApplicationLab/qubols?branch=master)
 
 <p align="center">
 <img width="460" height="300" src=./docs/qnr.png>
