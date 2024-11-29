@@ -1,3 +1,4 @@
+![Platform](https://img.shields.io/badge/platform-Linux-blue)
 [![github repo badge](https://img.shields.io/badge/github-repo-000.svg?logo=github&labelColor=gray&color=blue)](https://github.com/QuantumApplicationLab/quantumnewtonraphson) 
 [![github license badge](https://img.shields.io/github/license/QuantumApplicationLab/quantumnewtonraphson)](https://github.com/QuantumApplicationLab/quantumnewtonraphson)
 [![Python](https://img.shields.io/badge/Python-3.8-informational)](https://www.python.org/)
